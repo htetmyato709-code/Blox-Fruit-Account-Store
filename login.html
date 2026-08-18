@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Blox Fruit Shop</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS CDN -->
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4">
@@ -31,8 +31,6 @@
   <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
-    
-    // Supabase Client တည်ဆောက်ခြင်း
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -44,7 +42,7 @@
       const btn = document.getElementById('loginBtn');
 
       btn.disabled = true;
-      btn.textContent = 'စစ်ဆေးနေပါသည်...';
+      btn.textContent = 'ဝင်ရောက်နေပါသည်...';
       errBox.classList.add('hidden');
 
       try {
@@ -53,27 +51,19 @@
           password: password
         });
 
-        if (error) {
-          throw error;
+        if (error) throw error;
+
+        // Login အောင်မြင်ပါက Admin ဖြစ်စေ၊ သာမန် User ဖြစ်စေ ချက်ချင်း သက်ဆိုင်ရာ စာမျက်နှာသို့ လွှဲပြောင်းပေးခြင်း
+        if (email.toLowerCase() === 'htetmyato709@gmail.com') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'index.html';
         }
 
-        if (data?.user) {
-          // Owner Email ဖြစ်ပါက Admin Panel သို့ တိုက်ရိုက်သွားမည်
-          if (email.toLowerCase() === 'htetmyato709@gmail.com') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'index.html';
-          }
-        }
       } catch (err) {
-        let msg = err.message;
-        if (msg === "Invalid login credentials") {
-          msg = "Email သို့မဟုတ် Password မှားယွင်းနေပါသည် (သို့မဟုတ် အကောင့်မဖွင့်ရသေးပါ)";
-        } else if (msg === "Email not confirmed") {
-          msg = "Supabase တွင် Email အတည်ပြုရန် လိုအပ်နေပါသည်။ Supabase Dashboard > Authentication > Providers > Email တွင် 'Confirm email' ကို ပိတ်ပေးပါ။";
-        }
-        
-        errBox.textContent = msg;
+        errBox.textContent = err.message === 'Invalid login credentials' 
+          ? 'Email သို့မဟုတ် Password မှားယွင်းနေပါသည်' 
+          : err.message;
         errBox.classList.remove('hidden');
         btn.disabled = false;
         btn.textContent = 'Login ဝင်မည်';
