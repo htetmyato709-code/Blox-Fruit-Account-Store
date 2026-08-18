@@ -8,13 +8,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen">
-  <!-- Navbar -->
-  <nav class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center max-w-6xl mx-auto">
-    <a href="index.html" class="font-bold text-xl text-blue-500">Blox Fruit Shop</a>
-    <div class="space-x-4 flex items-center">
-      <a href="index.html" class="text-gray-300 hover:text-white">Shop</a>
-      <span id="userBalance" class="text-emerald-400 font-bold">0 MMK</span>
-      <button onclick="supabase.auth.signOut().then(() => location.href='login.html')" class="text-red-400 text-sm">Logout</button>
+  <nav class="bg-gray-900 border-b border-gray-800 p-4">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="font-bold text-xl text-blue-500">Blox Fruit Shop</a>
+      <div class="space-x-4 flex items-center">
+        <a href="index.html" class="text-gray-300 hover:text-white text-sm">Shop</a>
+        <span id="userBalance" class="text-emerald-400 font-bold text-sm">0 MMK</span>
+        <button onclick="supabase.auth.signOut().then(() => location.href='login.html')" class="text-red-400 text-sm">Logout</button>
+      </div>
     </div>
   </nav>
 
@@ -25,13 +26,13 @@
     </div>
   </div>
 
-  <script src="js/supabase.js"></script>
+  <script src="Js/supabase.js"></script>
   <script>
     async function loadInbox() {
       const auth = await checkAuth();
       if (!auth) return;
 
-      document.getElementById('userBalance').textContent = `${auth.profile.wallet_balance} MMK`;
+      document.getElementById('userBalance').textContent = `Balance: ${auth.profile.wallet_balance} MMK`;
 
       const { data: orders } = await supabase
         .from('orders')
