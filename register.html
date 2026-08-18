@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - Blox Fruit Shop</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4">
   <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
     <h2 class="text-2xl font-bold text-center text-blue-500 mb-6">အကောင့်ဖွင့်ရန်</h2>
+    
     <div id="errorMsg" class="hidden bg-red-500/20 text-red-400 p-3 rounded-lg text-sm mb-4"></div>
 
     <form id="registerForm" class="space-y-4">
@@ -34,8 +36,13 @@
     <p class="text-center text-gray-400 text-sm mt-4">အကောင့်ရှိပြီးသားလား? <a href="login.html" class="text-blue-400 hover:underline">Login ဝင်ရန်</a></p>
   </div>
 
-  <script src="Js/supabase.js"></script>
   <script>
+    // Supabase တိုက်ရိုက်ချိတ်ဆက်ခြင်း
+    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
@@ -56,24 +63,27 @@
       errBox.classList.add('hidden');
 
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await client.auth.signUp({
           email,
           password,
-          options: { data: { username } }
+          options: {
+            data: { username: username }
+          }
         });
 
         if (error) throw error;
 
-        // Auto Login
-        await supabase.auth.signInWithPassword({ email, password });
+        // Auto Login ဝင်ပေးခြင်း
+        await client.auth.signInWithPassword({ email, password });
 
-        if (email === 'htetmyato709@gmail.com') {
+        if (email.toLowerCase() === 'htetmyato709@gmail.com') {
           window.location.href = 'admin.html';
         } else {
           window.location.href = 'index.html';
         }
+
       } catch (err) {
-        errBox.textContent = err.message || 'Error ဖြစ်ပေါ်နေပါသည်';
+        errBox.textContent = err.message || 'အကောင့်ဖွင့်ရာတွင် Error ဖြစ်ပေါ်နေပါသည်';
         errBox.classList.remove('hidden');
         btn.disabled = false;
         btn.textContent = 'အကောင့်ဖွင့်မည်';
