@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Blox Fruit Shop</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4">
   <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
     <h2 class="text-2xl font-bold text-center text-blue-500 mb-6">အကောင့်ဝင်ရောက်ရန်</h2>
-    <div id="errorMsg" class="hidden bg-red-500/20 text-red-400 p-3 rounded-lg text-sm mb-4"></div>
+    
+    <div id="errorMsg" class="hidden bg-red-500/20 border border-red-500/40 text-red-400 p-3 rounded-lg text-sm mb-4"></div>
 
     <form id="loginForm" class="space-y-4">
       <div>
@@ -26,10 +28,16 @@
     <p class="text-center text-gray-400 text-sm mt-4">အကောင့်မရှိသေးဘူးလား? <a href="register.html" class="text-blue-400 hover:underline">အကောင့်ဖွင့်ရန်</a></p>
   </div>
 
-  <script src="Js/supabase.js"></script>
   <script>
+    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    
+    // Supabase Client တည်ဆောက်ခြင်း
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const errBox = document.getElementById('errorMsg');
@@ -39,26 +47,36 @@
       btn.textContent = 'စစ်ဆေးနေပါသည်...';
       errBox.classList.add('hidden');
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
 
-      if (error) {
-        errBox.textContent = 'Email သို့မဟုတ် Password မှားယွင်းနေပါသည်';
+        if (error) {
+          throw error;
+        }
+
+        if (data?.user) {
+          // Owner Email ဖြစ်ပါက Admin Panel သို့ တိုက်ရိုက်သွားမည်
+          if (email.toLowerCase() === 'htetmyato709@gmail.com') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'index.html';
+          }
+        }
+      } catch (err) {
+        let msg = err.message;
+        if (msg === "Invalid login credentials") {
+          msg = "Email သို့မဟုတ် Password မှားယွင်းနေပါသည် (သို့မဟုတ် အကောင့်မဖွင့်ရသေးပါ)";
+        } else if (msg === "Email not confirmed") {
+          msg = "Supabase တွင် Email အတည်ပြုရန် လိုအပ်နေပါသည်။ Supabase Dashboard > Authentication > Providers > Email တွင် 'Confirm email' ကို ပိတ်ပေးပါ။";
+        }
+        
+        errBox.textContent = msg;
         errBox.classList.remove('hidden');
         btn.disabled = false;
         btn.textContent = 'Login ဝင်မည်';
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profile?.role === 'admin' || email === 'htetmyato709@gmail.com') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'index.html';
       }
     });
   </script>
