@@ -24,7 +24,7 @@
   <div class="max-w-6xl mx-auto p-6">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-blue-400">ရောင်းရန်ရှိသော Blox Fruit Accounts များ</h1>
-      <button onclick="location.reload()" class="text-xs bg-gray-800 px-3 py-1.5 rounded-lg text-gray-300">🔄 Refresh</button>
+      <button onclick="location.reload()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-gray-300">🔄 Refresh</button>
     </div>
     <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <p class="text-gray-500">Account စာရင်းများ ဆွဲယူနေပါသည်...</p>
@@ -46,14 +46,14 @@
         currentUser = session.user;
         const userEmail = currentUser.email.toLowerCase();
 
-        // Profile ဆွဲထုတ်ခြင်း
+        // Profile ဆွဲယူခြင်း
         let { data: profile } = await supabaseClient
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
           .maybeSingle();
 
-        // Profile မရှိသေးပါက Auto ဆောက်ပေးခြင်း
+        // Profile မရှိသေးပါက Auto တည်ဆောက်ခြင်း
         if (!profile) {
           const defaultUsername = currentUser.user_metadata?.username || userEmail.split('@')[0];
           const isOwner = userEmail === 'htetmyato709@gmail.com';
@@ -73,7 +73,7 @@
 
         userProfile = { ...profile, username: displayName, wallet_balance: balance };
 
-        // Navbar ပြသခြင်း (Admin ဖြစ်ပါက Admin Dashboard ခလုတ် အနီရောင် ပေါ်မည်)
+        // Navbar ပြသခြင်း
         document.getElementById('navLinks').innerHTML = `
           <div class="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg text-sm text-blue-300 font-bold">
             👤 ${displayName}
@@ -110,7 +110,7 @@
               <span class="text-xs ${hasStock ? 'text-blue-400' : 'text-red-400'} font-semibold">Stock: ${p.stock_count}</span>
             </div>
           </div>
-          <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" ${!hasStock ? 'disabled' : ''} class="w-full ${hasStock ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 text-gray-500 cursor-not-allowed'} py-2.5 rounded-xl font-bold text-sm">
+          <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" ${!hasStock ? 'disabled' : ''} class="w-full ${hasStock ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 text-gray-500 cursor-not-allowed'} py-2.5 rounded-xl font-bold text-sm transition">
             ${hasStock ? 'ဝယ်ယူမည်' : 'Out of Stock'}
           </button>
         `;
@@ -133,23 +133,39 @@
       if (!confirm(`"${title}" ကို ${price} MMK ဖြင့် ဝယ်ယူမှာ သေချာပါသလား?`)) return;
 
       try {
-        const buyerUsername = userProfile.username;
-        
-        await supabaseClient.from('orders').insert([{
-          user_id: currentUser.id,
-          product_title: title,
-          price: price,
-          status: 'pending',
-          admin_note: buyerUsername
-        }]);
+        const buyerName = userProfile.username || currentUser.user_metadata?.username || currentUser.email;
 
-        await supabaseClient.from('profiles').update({ wallet_balance: userProfile.wallet_balance - price }).eq('id', currentUser.id);
-        await supabaseClient.from('products').update({ stock_count: stock - 1 }).eq('id', id);
+        // ၁။ Order အသစ်ကို Database ထဲသို့ ထည့်သွင်းခြင်း
+        const { data: newOrder, error: orderError } = await supabaseClient
+          .from('orders')
+          .insert([{
+            user_id: currentUser.id,
+            product_title: title,
+            price: price,
+            status: 'pending',
+            admin_note: buyerName
+          }])
+          .select();
+
+        if (orderError) throw orderError;
+
+        // ၂။ User Balance မှ ငွေနှုတ်ခြင်း
+        await supabaseClient
+          .from('profiles')
+          .update({ wallet_balance: userProfile.wallet_balance - price })
+          .eq('id', currentUser.id);
+
+        // ၃။ ပစ္စည်း Stock လျှော့ချခြင်း
+        await supabaseClient
+          .from('products')
+          .update({ stock_count: Math.max(0, stock - 1) })
+          .eq('id', id);
 
         alert('ဝယ်ယူမှု အောင်မြင်ပါသည်! Admin မှ Roblox Account အချက်အလက်ကို Inbox ထဲသို့ ပို့ပေးပါမည်။');
         window.location.href = 'inbox.html';
+
       } catch (err) {
-        alert('Error: ' + err.message);
+        alert('Order တင်ရာတွင် Error ဖြစ်ပေါ်နေပါသည်: ' + (err.message || JSON.stringify(err)));
       }
     }
 
