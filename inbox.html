@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Inbox - Blox Fruit Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center max-w-6xl mx-auto">
+    <a href="index.html" class="font-bold text-xl text-blue-500">Blox Fruit Shop</a>
+    <div class="space-x-4 flex items-center">
+      <a href="index.html" class="text-gray-300 hover:text-white">Shop</a>
+      <span id="userBalance" class="text-emerald-400 font-bold">0 MMK</span>
+      <button onclick="supabase.auth.signOut().then(() => location.href='login.html')" class="text-red-400 text-sm">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-bold text-blue-400 mb-6">ဝယ်ယူထားသော အကောင့်များ (My Inbox)</h1>
+    <div id="ordersList" class="space-y-4">
+      <p class="text-gray-500">စာရင်းများ ဆွဲယူနေပါသည်...</p>
+    </div>
+  </div>
+
+  <script src="js/supabase.js"></script>
+  <script>
+    async function loadInbox() {
+      const auth = await checkAuth();
+      if (!auth) return;
+
+      document.getElementById('userBalance').textContent = `${auth.profile.wallet_balance} MMK`;
+
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', auth.session.user.id)
+        .order('created_at', { ascending: false });
+
+      const container = document.getElementById('ordersList');
+      container.innerHTML = '';
+
+      if (!orders || orders.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">ဝယ်ယူထားသော အကောင့်မရှိသေးပါ</p>';
+        return;
+      }
+
+      orders.forEach(order => {
+        const isCompleted = order.status === 'completed';
+        const card = document.createElement('div');
+        card.className = "bg-gray-900 border border-gray-800 p-5 rounded-xl";
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-bold text-lg text-white">${order.product_title}</h3>
+              <p class="text-xs text-gray-400">Price: ${order.price} MMK</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}">
+              ${isCompleted ? 'ပို့ဆောင်ပြီး' : 'Admin ပို့ပေးရန် စောင့်ဆိုင်းဆဲ'}
+            </span>
+          </div>
+          ${isCompleted ? `
+            <div class="bg-gray-800 p-4 rounded-lg space-y-2 border border-gray-700 text-sm">
+              <div class="flex justify-between"><span class="text-gray-400">Username:</span> <span class="font-mono text-blue-300 font-bold select-all">${order.delivered_username}</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Password:</span> <span class="font-mono text-emerald-300 font-bold select-all">${order.delivered_password}</span></div>
+              ${order.admin_note ? `<p class="text-xs text-gray-400 border-t border-gray-700 pt-2">Note: ${order.admin_note}</p>` : ''}
+            </div>
+          ` : '<p class="text-xs text-gray-500">Admin ဘက်မှ အကောင့်စစ်ဆေးပြီး Inbox ထဲ ပို့ပေးပါမည်။</p>'}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    loadInbox();
+  </script>
+</body>
+</html>
