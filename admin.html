@@ -100,7 +100,7 @@
     </div>
   </div>
 
-  <script src="js/supabase.js"></script>
+  <script src="Js/supabase.js"></script>
   <script>
     let adminAuth = null;
 
@@ -131,7 +131,7 @@
       }
     });
 
-    // Load Orders & Deliver
+    // Orders & Deliver
     async function loadPendingOrders() {
       const { data: orders } = await supabase
         .from('orders')
@@ -230,10 +230,8 @@
       const stock_count = parseInt(document.getElementById('prodStock').value);
 
       if (id) {
-        // Edit
         await supabase.from('products').update({ title, description, price, stock_count }).eq('id', id);
       } else {
-        // Add
         await supabase.from('products').insert([{ title, description, price, stock_count }]);
       }
 
@@ -251,4 +249,4 @@
     initAdmin();
   </script>
 </body>
-  </html>                                                                                                                       
+</html>
