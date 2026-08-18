@@ -1,4 +1,4 @@
-// js/supabase.js
+// Js/supabase.Js
 const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
 
