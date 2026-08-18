@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Blox Fruit</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen p-6">
@@ -17,8 +18,8 @@
         <p class="text-sm text-gray-400">Owner: htetmyato709@gmail.com</p>
       </div>
       <div class="space-x-3">
-        <a href="index.html" class="bg-gray-800 px-4 py-2 rounded-lg text-sm">Shop သို့သွားရန်</a>
-        <button onclick="supabase.auth.signOut().then(() => location.href='login.html')" class="bg-red-600 px-4 py-2 rounded-lg text-sm font-bold">Logout</button>
+        <a href="index.html" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm">Shop သို့သွားရန်</a>
+        <button onclick="supabaseClient.auth.signOut().then(() => location.href='login.html')" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-bold">Logout</button>
       </div>
     </div>
 
@@ -34,11 +35,11 @@
           <label class="block text-xs text-gray-400 mb-1">ငွေပမာဏ (MMK)</label>
           <input type="number" id="topupAmount" required placeholder="5000" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
         </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2.5 rounded-lg text-sm">ငွေဖြည့်မည် (Add Balance)</button>
+        <button type="submit" id="topupBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2.5 rounded-lg text-sm">ငွေဖြည့်မည် (Add Balance)</button>
       </form>
     </div>
 
-    <!-- Orders Section (Deliver Accounts) -->
+    <!-- Orders Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4">
       <h2 class="text-lg font-bold text-yellow-400">အကောင့်ပို့ပေးရန် စောင့်ဆိုင်းနေသော Orders (Pending)</h2>
       <div id="adminOrders" class="space-y-3">
@@ -46,11 +47,11 @@
       </div>
     </div>
 
-    <!-- Product Management (Add / List / Edit / Delete) -->
+    <!-- Product Management Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-6">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-blue-400">Account ပစ္စည်းများ စီမံခန့်ခွဲရန် (Products CRUD)</h2>
-        <button onclick="document.getElementById('addProductModal').classList.remove('hidden')" class="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold">+ Account အသစ်ထည့်မည်</button>
+        <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold">+ Account အသစ်ထည့်မည်</button>
       </div>
       
       <div class="overflow-x-auto">
@@ -72,42 +73,40 @@
 
   <!-- Add/Edit Product Modal -->
   <div id="addProductModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-md w-full space-y-4">
+    <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
       <h3 id="modalTitle" class="text-lg font-bold text-white">Add Blox Fruit Account</h3>
       <input type="hidden" id="editProductId">
       <div>
         <label class="block text-xs text-gray-400 mb-1">Title</label>
-        <input type="text" id="prodTitle" required class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="Max Level + Godhuman">
+        <input type="text" id="prodTitle" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="Max Level + CDK">
       </div>
       <div>
         <label class="block text-xs text-gray-400 mb-1">Description</label>
-        <textarea id="prodDesc" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="အသေးစိတ်အချက်အလက်"></textarea>
+        <textarea id="prodDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="အသေးစိတ်အချက်အလက်"></textarea>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs text-gray-400 mb-1">Price (MMK)</label>
-          <input type="number" id="prodPrice" required class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
+          <input type="number" id="prodPrice" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="4000">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Stock</label>
-          <input type="number" id="prodStock" required class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
+          <input type="number" id="prodStock" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" value="1">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeProductModal()" class="bg-gray-800 px-4 py-2 rounded-lg text-sm">Cancel</button>
-        <button onclick="saveProduct()" class="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold">Save</button>
+        <button type="button" onclick="closeProductModal()" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-300">Cancel</button>
+        <button type="button" id="saveProdBtn" onclick="saveProduct()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-sm font-bold text-white">Save</button>
       </div>
     </div>
   </div>
 
-  <script src="Js/supabase.js"></script>
   <script>
-    let adminAuth = null;
+    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function initAdmin() {
-      adminAuth = await checkAuth('admin');
-      if (!adminAuth) return;
-
       loadPendingOrders();
       loadProducts();
     }
@@ -117,23 +116,30 @@
       e.preventDefault();
       const username = document.getElementById('topupUser').value.trim();
       const amount = parseFloat(document.getElementById('topupAmount').value);
+      const btn = document.getElementById('topupBtn');
 
-      const { data, error } = await supabase.rpc('admin_add_balance_by_username', {
+      btn.disabled = true;
+      btn.textContent = 'ဖြည့်သွင်းနေပါသည်...';
+
+      const { data, error } = await supabaseClient.rpc('admin_add_balance_by_username', {
         target_username: username,
         add_amount: amount
       });
 
-      if (error || !data.success) {
-        alert(error?.message || data?.message);
+      btn.disabled = false;
+      btn.textContent = 'ငွေဖြည့်မည် (Add Balance)';
+
+      if (error || !data?.success) {
+        alert(error?.message || data?.message || 'Error ဖြစ်ပေါ်နေပါသည်');
       } else {
         alert(`${username} ထံသို့ ${amount} MMK ဖြည့်သွင်းပြီးပါပြီ!`);
         document.getElementById('topupForm').reset();
       }
     });
 
-    // Orders & Deliver
+    // Load Pending Orders
     async function loadPendingOrders() {
-      const { data: orders } = await supabase
+      const { data: orders, error } = await supabaseClient
         .from('orders')
         .select('*')
         .eq('status', 'pending')
@@ -141,6 +147,11 @@
 
       const container = document.getElementById('adminOrders');
       container.innerHTML = '';
+
+      if (error) {
+        container.innerHTML = `<p class="text-red-400 text-sm">Error: ${error.message}</p>`;
+        return;
+      }
 
       if (!orders || orders.length === 0) {
         container.innerHTML = '<p class="text-gray-500 text-sm">ပို့ရန်ကျန်သော Order မရှိပါ</p>';
@@ -153,7 +164,7 @@
         div.innerHTML = `
           <div>
             <p class="font-bold text-white">${order.product_title}</p>
-            <p class="text-xs text-gray-400">Order ID: ${order.id}</p>
+            <p class="text-xs text-gray-400">Price: ${order.price} MMK</p>
           </div>
           <button onclick="deliverOrderPrompt('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-xs font-bold">Account ပို့မည် (Deliver)</button>
         `;
@@ -168,31 +179,47 @@
       if (!password) return;
       const note = prompt("Additional Note (ရွေးချယ်ရန်):") || "";
 
-      const { error } = await supabase.from('orders').update({
-        delivered_username: username,
-        delivered_password: password,
-        admin_note: note,
+      const { error } = await supabaseClient.from('orders').update({
+        delivered_username: username.trim(),
+        delivered_password: password.trim(),
+        admin_note: note.trim(),
         status: 'completed',
         completed_at: new Date().toISOString()
       }).eq('id', orderId);
 
-      if (!error) {
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
         alert("User ထံ အောင်မြင်စွာ ပို့ဆောင်ပြီးပါပြီ!");
         loadPendingOrders();
       }
     }
 
-    // Products CRUD
+    // Load Products
     async function loadProducts() {
-      const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data: products, error } = await supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
       const tbody = document.getElementById('productsTableBody');
       tbody.innerHTML = '';
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-red-400">Error: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!products || products.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-gray-500">Account ပစ္စည်းမရှိသေးပါ</td></tr>`;
+        return;
+      }
 
       products.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="p-3 text-white font-medium">${p.title}</td>
-          <td class="p-3">${p.price} MMK</td>
+          <td class="p-3 text-emerald-400 font-bold">${p.price} MMK</td>
           <td class="p-3">${p.stock_count}</td>
           <td class="p-3 space-x-2">
             <button onclick='editProductPrompt(${JSON.stringify(p)})' class="text-blue-400 hover:underline">Edit</button>
@@ -203,45 +230,84 @@
       });
     }
 
+    function openAddModal() {
+      document.getElementById('editProductId').value = '';
+      document.getElementById('prodTitle').value = '';
+      document.getElementById('prodDesc').value = '';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodStock').value = '1';
+      document.getElementById('modalTitle').textContent = 'Add Blox Fruit Account';
+      document.getElementById('addProductModal').classList.remove('hidden');
+    }
+
     function editProductPrompt(p) {
       document.getElementById('editProductId').value = p.id;
       document.getElementById('prodTitle').value = p.title;
       document.getElementById('prodDesc').value = p.description || '';
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodStock').value = p.stock_count;
-      document.getElementById('modalTitle').textContent = 'Edit Account';
+      document.getElementById('modalTitle').textContent = 'Edit Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
 
     function closeProductModal() {
       document.getElementById('addProductModal').classList.add('hidden');
-      document.getElementById('editProductId').value = '';
-      document.getElementById('prodTitle').value = '';
-      document.getElementById('prodDesc').value = '';
-      document.getElementById('prodPrice').value = '';
-      document.getElementById('prodStock').value = '';
     }
 
+    // Save Product
     async function saveProduct() {
       const id = document.getElementById('editProductId').value;
       const title = document.getElementById('prodTitle').value.trim();
       const description = document.getElementById('prodDesc').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value);
       const stock_count = parseInt(document.getElementById('prodStock').value);
+      const saveBtn = document.getElementById('saveProdBtn');
 
-      if (id) {
-        await supabase.from('products').update({ title, description, price, stock_count }).eq('id', id);
-      } else {
-        await supabase.from('products').insert([{ title, description, price, stock_count }]);
+      if (!title || isNaN(price) || isNaN(stock_count)) {
+        alert('Title, Price နှင့် Stock ကို ပြည့်စုံစွာ ဖြည့်ပေးပါ');
+        return;
       }
 
-      closeProductModal();
-      loadProducts();
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'သိမ်းဆည်းနေပါသည်...';
+
+      try {
+        let res;
+        if (id) {
+          res = await supabaseClient.from('products').update({ 
+            title: title, 
+            description: description, 
+            price: price, 
+            stock_count: stock_count 
+          }).eq('id', id);
+        } else {
+          res = await supabaseClient.from('products').insert([{ 
+            title: title, 
+            description: description, 
+            price: price, 
+            stock_count: stock_count 
+          }]);
+        }
+
+        if (res.error) {
+          throw res.error;
+        }
+
+        alert('Account အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ!');
+        closeProductModal();
+        loadProducts();
+      } catch (err) {
+        alert('Error တက်နေပါသည်: ' + (err.message || JSON.stringify(err)));
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
     }
 
     async function deleteProduct(id) {
       if (confirm('ဤ Account ကို ဖျက်မှာ သေချာပါသလား?')) {
-        await supabase.from('products').delete().eq('id', id);
+        const { error } = await supabaseClient.from('products').delete().eq('id', id);
+        if (error) alert("Error: " + error.message);
         loadProducts();
       }
     }
@@ -249,4 +315,4 @@
     initAdmin();
   </script>
 </body>
-</html>
+          </html>
