@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Direct Top-up Section (ငွေတိုက်ရိုက်ဖြည့်ရန်) -->
+    <!-- Direct Top-up Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-xl shadow-xl">
       <h2 class="text-lg font-bold text-emerald-400 mb-4 flex items-center gap-2">
         <span>💰</span> User ထံ ငွေတိုက်ရိုက်ဖြည့်ပေးရန်
@@ -41,7 +41,7 @@
       </form>
     </div>
 
-    <!-- Orders Section (Buyer Account Name ပါ ပြသထားသည်) -->
+    <!-- Orders Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4 shadow-xl">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-yellow-400 flex items-center gap-2">
@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <!-- Product Management (Add / List / Edit / Delete) -->
+    <!-- Product Management Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-6 shadow-xl">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-blue-400 flex items-center gap-2">
@@ -67,6 +67,7 @@
         <table class="w-full text-left text-sm text-gray-400">
           <thead class="bg-gray-800 text-gray-200">
             <tr>
+              <th class="p-3">Category</th>
               <th class="p-3">Title</th>
               <th class="p-3">Price</th>
               <th class="p-3">Stock</th>
@@ -85,22 +86,35 @@
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
       <h3 id="modalTitle" class="text-lg font-bold text-white">Add Blox Fruit Account</h3>
       <input type="hidden" id="editProductId">
+
+      <!-- Category Selection Buttons -->
+      <div>
+        <label class="block text-xs text-gray-400 mb-2">Category ရွေးချယ်ပါ</label>
+        <div class="grid grid-cols-2 gap-2" id="modalCategoryGroup">
+          <button type="button" onclick="selectModalCategory('V4 Account')" class="modal-cat-btn border border-blue-500 bg-blue-600/30 text-blue-300 p-2 rounded-xl text-xs font-semibold" data-val="V4 Account">⚡ V4 Account</button>
+          <button type="button" onclick="selectModalCategory('Kit Eat Account')" class="modal-cat-btn border border-gray-700 bg-gray-800 text-gray-400 p-2 rounded-xl text-xs font-semibold" data-val="Kit Eat Account">🦊 Kit Eat Account</button>
+          <button type="button" onclick="selectModalCategory('Random Level accounts')" class="modal-cat-btn border border-gray-700 bg-gray-800 text-gray-400 p-2 rounded-xl text-xs font-semibold" data-val="Random Level accounts">🎲 Random Level</button>
+          <button type="button" onclick="selectModalCategory('God Fruit Inventory')" class="modal-cat-btn border border-gray-700 bg-gray-800 text-gray-400 p-2 rounded-xl text-xs font-semibold" data-val="God Fruit Inventory">👑 God Fruit Inv</button>
+        </div>
+        <input type="hidden" id="prodCategory" value="V4 Account">
+      </div>
+
       <div>
         <label class="block text-xs text-gray-400 mb-1">Title</label>
-        <input type="text" id="prodTitle" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="Max Level + CDK + Human V4">
+        <input type="text" id="prodTitle" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="Max Level + CDK + Human V4">
       </div>
       <div>
         <label class="block text-xs text-gray-400 mb-1">Description</label>
-        <textarea id="prodDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="အသေးစိတ်အချက်အလက်"></textarea>
+        <textarea id="prodDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="အသေးစိတ်အချက်အလက်"></textarea>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs text-gray-400 mb-1">Price (MMK)</label>
-          <input type="number" id="prodPrice" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="4000">
+          <input type="number" id="prodPrice" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="4000">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Stock</label>
-          <input type="number" id="prodStock" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" value="1">
+          <input type="number" id="prodStock" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" value="1">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -117,18 +131,15 @@
 
     async function initAdmin() {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      // Owner Account သာ ဝင်ရောက်ခွင့်ပေးခြင်း
       if (!session || session.user.email.toLowerCase() !== 'htetmyato709@gmail.com') {
         window.location.href = 'login.html';
         return;
       }
-
       loadPendingOrders();
       loadProducts();
     }
 
-    // Direct Topup (ငွေတိုက်ရိုက်ဖြည့်သွင်းခြင်း)
+    // Direct Topup
     document.getElementById('topupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const usernameInput = document.getElementById('topupUser').value.trim();
@@ -171,7 +182,7 @@
       }
     });
 
-    // Load Pending Orders (ဝယ်ယူသူ၏ Account Name ပါ ပြသခြင်း)
+    // Orders & Deliver
     async function loadPendingOrders() {
       const { data: orders, error } = await supabaseClient
         .from('orders')
@@ -210,7 +221,6 @@
       });
     }
 
-    // Account ပို့ပေးခြင်း Prompt
     async function deliverOrderPrompt(orderId) {
       const username = prompt("Roblox Username ထည့်ပါ:");
       if (!username) return;
@@ -232,6 +242,18 @@
       }
     }
 
+    // Category Select Handler in Modal
+    function selectModalCategory(cat) {
+      document.getElementById('prodCategory').value = cat;
+      document.querySelectorAll('.modal-cat-btn').forEach(btn => {
+        if (btn.getAttribute('data-val') === cat) {
+          btn.className = "modal-cat-btn border border-blue-500 bg-blue-600/30 text-blue-300 p-2 rounded-xl text-xs font-semibold";
+        } else {
+          btn.className = "modal-cat-btn border border-gray-700 bg-gray-800 text-gray-400 p-2 rounded-xl text-xs font-semibold";
+        }
+      });
+    }
+
     // Products CRUD
     async function loadProducts() {
       const { data: products, error } = await supabaseClient
@@ -245,6 +267,7 @@
       (products || []).forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td class="p-3"><span class="text-xs bg-blue-950 text-blue-400 border border-blue-800/40 px-2 py-0.5 rounded">${p.category || 'V4 Account'}</span></td>
           <td class="p-3 text-white font-medium">${p.title}</td>
           <td class="p-3 text-emerald-400 font-bold">${p.price} MMK</td>
           <td class="p-3">${p.stock_count}</td>
@@ -263,6 +286,7 @@
       document.getElementById('prodDesc').value = '';
       document.getElementById('prodPrice').value = '';
       document.getElementById('prodStock').value = '1';
+      selectModalCategory('V4 Account');
       document.getElementById('modalTitle').textContent = 'Add Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
@@ -273,6 +297,7 @@
       document.getElementById('prodDesc').value = p.description || '';
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodStock').value = p.stock_count;
+      selectModalCategory(p.category || 'V4 Account');
       document.getElementById('modalTitle').textContent = 'Edit Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
@@ -283,6 +308,7 @@
 
     async function saveProduct() {
       const id = document.getElementById('editProductId').value;
+      const category = document.getElementById('prodCategory').value;
       const title = document.getElementById('prodTitle').value.trim();
       const description = document.getElementById('prodDesc').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value);
@@ -299,10 +325,12 @@
 
       try {
         let res;
+        const payload = { category, title, description, price, stock_count };
+
         if (id) {
-          res = await supabaseClient.from('products').update({ title, description, price, stock_count }).eq('id', id);
+          res = await supabaseClient.from('products').update(payload).eq('id', id);
         } else {
-          res = await supabaseClient.from('products').insert([{ title, description, price, stock_count }]);
+          res = await supabaseClient.from('products').insert([payload]);
         }
 
         if (res.error) throw res.error;
