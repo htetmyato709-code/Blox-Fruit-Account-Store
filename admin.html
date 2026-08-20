@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <!-- 1. Topup Requests Section (User များ လှမ်းဖြည့်ထားသော စာရင်း) -->
+    <!-- 1. Topup Requests Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4 shadow-xl">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-emerald-400 flex items-center gap-2">
@@ -135,8 +135,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    const SUPABASE_URL = "https://jhcnqwzezvjldhigxpze.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoY25xd3plenZqbGRoaWd4cHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDQ0ODUsImV4cCI6MjEwMDUyMDQ4NX0.pwq1ps7MfvQIiZGuvs9TLimYRSq_9O5ebaMrKqd6oZk";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function initAdmin() {
@@ -150,7 +150,7 @@
       loadProducts();
     }
 
-    // 1. Load User Topup Requests (Approve / Reject)
+    // Load Topup Requests
     async function loadTopupRequests() {
       const { data: list, error } = await supabaseClient
         .from('topup_requests')
@@ -196,9 +196,7 @@
         const { data: user } = await supabaseClient.from('profiles').select('wallet_balance').eq('id', userId).single();
         const newBal = (Number(user?.wallet_balance) || 0) + Number(amount);
 
-        // Update Balance
         await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', userId);
-        // Update Request Status
         await supabaseClient.from('topup_requests').update({ status: 'approved' }).eq('id', reqId);
 
         alert(`✅ ${username} ထံ ${amount} MMK အောင်မြင်စွာ ဖြည့်သွင်းပြီးပါပြီ!`);
@@ -214,7 +212,7 @@
       loadTopupRequests();
     }
 
-    // 2. Manual Topup
+    // Manual Topup
     document.getElementById('manualTopupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('topupUser').value.trim();
@@ -245,7 +243,7 @@
       }
     });
 
-    // 3. Orders & Deliver
+    // Orders
     async function loadPendingOrders() {
       const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
       const container = document.getElementById('adminOrders');
@@ -291,7 +289,7 @@
       loadPendingOrders();
     }
 
-    // 4. Products CRUD
+    // Categories in Modal
     function selectModalCategory(cat) {
       document.getElementById('prodCategory').value = cat;
       document.querySelectorAll('.modal-cat-btn').forEach(btn => {
@@ -341,6 +339,7 @@
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodStock').value = p.stock_count;
       selectModalCategory(p.category || 'V4 Account');
+      document.getElementById('modalTitle').textContent = 'Edit Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
 
@@ -377,4 +376,4 @@
     initAdmin();
   </script>
 </body>
-  </html>
+          </html>
