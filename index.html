@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Blox Fruit Shop - Premium Accounts</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Google Font (Inter & Orbitron for Gaming Vibe) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,38 +19,20 @@
         radial-gradient(circle at 85% 85%, rgba(147, 51, 234, 0.15) 0%, transparent 40%);
       background-attachment: fixed;
     }
-    .gaming-font {
-      font-family: 'Orbitron', sans-serif;
-      letter-spacing: 0.05em;
-    }
-    .glass-nav {
-      background: rgba(13, 19, 33, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
+    .gaming-font { font-family: 'Orbitron', sans-serif; }
+    .glass-nav { background: rgba(13, 19, 33, 0.85); backdrop-filter: blur(12px); }
     .glass-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: all 0.25s ease-in-out;
     }
-    .glass-card:hover {
-      border-color: rgba(59, 130, 246, 0.4);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
-    }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+<body class="text-slate-200 min-h-screen flex flex-col">
 
-  <!-- Gaming Header Navbar -->
+  <!-- Navbar -->
   <nav class="glass-nav border-b border-slate-800/80 sticky top-0 z-50 px-4 py-3">
     <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
       <a href="index.html" class="flex items-center gap-2">
@@ -64,72 +43,128 @@
         </div>
       </a>
 
-      <!-- Navbar Right (Auto Switch Auth/Profile) -->
       <div id="navLinks" class="flex items-center gap-2">
-        <a href="login.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-bold px-4 py-2 rounded-xl shadow-lg shadow-blue-600/30 active:scale-95 transition">Login</a>
-        <a href="register.html" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs md:text-sm font-semibold px-3.5 py-2 rounded-xl border border-slate-700 active:scale-95 transition">Register</a>
+        <a href="login.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Login</a>
+        <a href="register.html" class="bg-slate-800 text-slate-300 text-xs font-semibold px-3.5 py-2 rounded-xl border border-slate-700">Register</a>
       </div>
     </div>
   </nav>
 
-  <!-- Main Container -->
+  <!-- Main Content -->
   <main class="max-w-6xl w-full mx-auto px-4 py-5 flex-1 space-y-5">
     
-    <!-- Banner Hero Title (Mobile Optimized) -->
     <div class="flex justify-between items-center gap-2 border-b border-slate-800/60 pb-3">
       <div>
-        <h1 class="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
-          <span>🔥</span> Accounts Store
-        </h1>
+        <h1 class="text-lg md:text-2xl font-bold text-white flex items-center gap-2">🔥 Accounts Store</h1>
         <p class="text-xs text-slate-400 mt-0.5">ရွေးချယ်စရာ Blox Fruit အကောင့်မျိုးစုံ</p>
       </div>
-      <button onclick="loadProducts()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 active:scale-95 transition shadow-sm">
-        <span>🔄</span> <span class="hidden sm:inline">Refresh</span>
-      </button>
+      <div class="flex gap-2">
+        <button onclick="openTopupModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center gap-1 active:scale-95 transition">
+          <span>➕</span> <span>ငွေဖြည့်မည်</span>
+        </button>
+        <button onclick="loadProducts()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1 active:scale-95 transition">
+          <span>🔄</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Category Filter Buttons (Horizontal Scroll for Phone) -->
+    <!-- Category Filters -->
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-      <button onclick="filterCategory('All')" id="btn-All" class="cat-btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/25 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5">
-        <span>🌟</span> All Accounts
-      </button>
-      <button onclick="filterCategory('V4 Account')" id="btn-V4 Account" class="cat-btn bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5">
-        <span>⚡</span> V4 Account
-      </button>
-      <button onclick="filterCategory('Kit Eat Account')" id="btn-Kit Eat Account" class="cat-btn bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5">
-        <span>🦊</span> Kit Eat Account
-      </button>
-      <button onclick="filterCategory('Random Level accounts')" id="btn-Random Level accounts" class="cat-btn bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5">
-        <span>🎲</span> Random Level
-      </button>
-      <button onclick="filterCategory('God Fruit Inventory')" id="btn-God Fruit Inventory" class="cat-btn bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5">
-        <span>👑</span> God Fruit Inv
-      </button>
+      <button onclick="filterCategory('All')" id="btn-All" class="cat-btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95">🌟 All Accounts</button>
+      <button onclick="filterCategory('V4 Account')" id="btn-V4 Account" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95">⚡ V4 Account</button>
+      <button onclick="filterCategory('Kit Eat Account')" id="btn-Kit Eat Account" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95">🦊 Kit Eat Account</button>
+      <button onclick="filterCategory('Random Level accounts')" id="btn-Random Level accounts" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95">🎲 Random Level</button>
+      <button onclick="filterCategory('God Fruit Inventory')" id="btn-God Fruit Inventory" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95">👑 God Fruit Inv</button>
     </div>
 
     <!-- Product Grid -->
     <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-      <!-- Loading Skeleton -->
-      <div class="glass-card p-5 rounded-2xl animate-pulse space-y-4">
-        <div class="h-4 bg-slate-800 rounded w-1/3"></div>
-        <div class="h-6 bg-slate-800 rounded w-3/4"></div>
-        <div class="h-10 bg-slate-800/60 rounded"></div>
-        <div class="h-10 bg-slate-800 rounded"></div>
-      </div>
+      <p class="text-slate-500">Account စာရင်းများ ဆွဲယူနေပါသည်...</p>
     </div>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/60 py-4 text-center text-xs text-slate-500 mt-6">
-    © 2026 Blox Fruit Shop • Fast & Trusted Instant Store
-  </footer>
+  <!-- Top-up Modal (ငွေဖြည့် Pop-up Box) -->
+  <div id="topupModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="glass-card bg-slate-900 border border-slate-700 p-5 md:p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-emerald-400 flex items-center gap-2">
+          <span>💳</span> ငွေဖြည့်သွင်းရန် (Deposit)
+        </h3>
+        <button onclick="closeTopupModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Payment Accounts & Copy Buttons -->
+      <div class="space-y-2.5 text-xs">
+        <!-- Wave Pay -->
+        <div class="bg-yellow-950/30 border border-yellow-500/30 p-3 rounded-xl flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-1 font-bold text-yellow-400 text-sm">
+              <span>🟡 Wave Pay:</span>
+              <span id="waveNum">09940391862</span>
+            </div>
+            <p class="text-slate-400 text-[11px] mt-0.5">Name: <b>Ohn Mar Lwin</b></p>
+          </div>
+          <button onclick="copyText('09940391862', this)" class="bg-yellow-600 hover:bg-yellow-500 text-black font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+            📋 Copy
+          </button>
+        </div>
+
+        <!-- KBZ Pay -->
+        <div class="bg-blue-950/30 border border-blue-500/30 p-3 rounded-xl flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-1 font-bold text-blue-400 text-sm">
+              <span>🔵 K Pay:</span>
+              <span id="kpayNum">09894828386</span>
+            </div>
+            <p class="text-slate-400 text-[11px] mt-0.5">Name: <b>Thar Htoo Aung</b></p>
+          </div>
+          <button onclick="copyText('09894828386', this)" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 transition">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+
+      <!-- Top-up Form -->
+      <form id="topupFormUser" class="space-y-3 pt-2 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">ငွေလွှဲခဲ့သည့် Payment နည်းလမ်း</label>
+          <select id="userPaymentMethod" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded-xl text-white">
+            <option value="Wave Pay">Wave Pay (09940391862 - Ohn Mar Lwin)</option>
+            <option value="K Pay">K Pay (09894828386 - Thar Htoo Aung)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">ငွေလွှဲသူ၏ Wave / KPay Account Name</label>
+          <input type="text" id="userPayAccountName" required placeholder="ဥပမာ - Mg Mg" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded-xl text-white">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">ဖြည့်သွင်းလိုသော ငွေပမာဏ (MMK)</label>
+          <input type="number" id="userTopupAmount" required placeholder="5000" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded-xl text-white">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">ငွေလွှဲပြေစာ Screenshot (Slip Photo)</label>
+          <input type="file" id="userSlipFile" accept="image/*" required class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-slate-300 text-xs">
+        </div>
+
+        <button type="submit" id="submitTopupBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 font-bold py-3 rounded-xl text-white shadow-lg active:scale-98 transition">
+          🚀 ငွေဖြည့်တောင်းဆိုချက် ပေးပို့မည်
+        </button>
+      </form>
+    </div>
+  </div>
 
   <script>
-    const supabaseClient = window.supabase.createClient(
-      "https://jewxoyffdjobpfwpvvon.supabase.co", 
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ"
-    );
+    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Telegram Bot Details
+    const TELEGRAM_BOT_TOKEN = "8803633010:AAHQyprlNlAWvo94kJnG9cwyaBwmGsj2-kw";
+    const TELEGRAM_OWNER_ID = "8305397892";
 
     let currentUser = null;
     let userProfile = null;
@@ -137,79 +172,142 @@
     let currentCategory = 'All';
 
     async function initShop() {
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session?.user) {
-          currentUser = session.user;
-          const userEmail = currentUser.email.toLowerCase();
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        const userEmail = currentUser.email.toLowerCase();
 
-          let { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .maybeSingle();
+        let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+        const displayName = profile?.username || currentUser.user_metadata?.username || userEmail.split('@')[0];
+        const balance = profile?.wallet_balance || 0;
+        const isAdmin = userEmail === 'htetmyato709@gmail.com' || profile?.role === 'admin';
 
-          const displayName = profile?.username || currentUser.user_metadata?.username || userEmail.split('@')[0];
-          const balance = profile?.wallet_balance || 0;
-          const isAdmin = userEmail === 'htetmyato709@gmail.com' || profile?.role === 'admin';
+        userProfile = { ...profile, username: displayName, wallet_balance: balance };
 
-          userProfile = { ...profile, username: displayName, wallet_balance: balance };
-
-          // Responsive Mobile Navbar Buttons
-          document.getElementById('navLinks').innerHTML = `
-            <div class="flex items-center gap-1.5 sm:gap-2">
-              <div class="bg-slate-800/90 border border-slate-700/80 px-2.5 py-1.5 rounded-xl text-xs text-blue-300 font-bold flex items-center gap-1 max-w-[110px] truncate">
-                <span>👤</span> <span class="truncate">${displayName}</span>
-              </div>
-              <a href="inbox.html" class="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1 active:scale-95 transition">
-                <span>📥</span> <span class="hidden sm:inline">Inbox</span>
-              </a>
-              <div class="bg-emerald-950/50 border border-emerald-500/40 px-2.5 py-1.5 rounded-xl text-emerald-400 font-extrabold text-xs flex items-center gap-1 shadow-sm">
-                <span>💰</span> <span>${balance.toLocaleString()}</span> <span class="text-[10px] hidden sm:inline">MMK</span>
-              </div>
-              ${isAdmin ? '<a href="admin.html" class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl shadow-lg shadow-red-600/30 active:scale-95 transition">🛠️</a>' : ''}
-              <button onclick="supabaseClient.auth.signOut().then(() => location.reload())" class="text-slate-400 hover:text-red-400 text-xs p-1" title="Logout">🚪</button>
+        document.getElementById('navLinks').innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <div class="bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-xl text-xs text-blue-300 font-bold truncate max-w-[100px]">
+              👤 ${displayName}
             </div>
-          `;
-        }
-      } catch (err) {
-        console.error("Auth check error:", err);
+            <a href="inbox.html" class="bg-blue-600/20 border border-blue-500/40 text-blue-300 font-bold text-xs px-2.5 py-1.5 rounded-xl">📥 Inbox</a>
+            <div class="bg-emerald-950/50 border border-emerald-500/40 px-2.5 py-1.5 rounded-xl text-emerald-400 font-extrabold text-xs">
+              💰 ${Number(balance).toLocaleString()} MMK
+            </div>
+            ${isAdmin ? '<a href="admin.html" class="bg-red-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl">🛠️</a>' : ''}
+            <button onclick="supabaseClient.auth.signOut().then(() => location.reload())" class="text-slate-400 hover:text-red-400 text-xs p-1">🚪</button>
+          </div>
+        `;
       }
       loadProducts();
     }
 
-    async function loadProducts() {
-      const grid = document.getElementById('productsGrid');
-      const { data: products, error } = await supabaseClient
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    // Copy Tool
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const old = btn.textContent;
+        btn.textContent = '✅ Copied';
+        setTimeout(() => btn.textContent = old, 1500);
+      });
+    }
 
-      if (error || !products || products.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-12 glass-card rounded-2xl space-y-2">
-            <span class="text-3xl">📦</span>
-            <p class="text-slate-400 text-sm font-semibold">လောလောဆယ် ရောင်းရန် Account မရှိသေးပါ</p>
-          </div>
-        `;
+    function openTopupModal() {
+      if (!currentUser) {
+        alert('ငွေဖြည့်ရန် အရင်ဆုံး Login ဝင်ပေးပါ');
+        location.href = 'login.html';
+        return;
+      }
+      document.getElementById('topupModal').classList.remove('hidden');
+    }
+
+    function closeTopupModal() {
+      document.getElementById('topupModal').classList.add('hidden');
+    }
+
+    // Top-up Submit Form (Supabase + Telegram Bot Alert)
+    document.getElementById('topupFormUser').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const method = document.getElementById('userPaymentMethod').value;
+      const accName = document.getElementById('userPayAccountName').value.trim();
+      const amount = parseFloat(document.getElementById('userTopupAmount').value);
+      const fileInput = document.getElementById('userSlipFile');
+      const submitBtn = document.getElementById('submitTopupBtn');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('ငွေလွှဲပြေစာ Screenshot ထည့်ပေးပါ');
         return;
       }
 
+      const file = fileInput.files[0];
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Telegram သို့ ပေးပို့နေပါသည်...';
+
+      try {
+        const buyerName = userProfile?.username || currentUser.email;
+
+        // ၁။ Base64 ဖြင့် ပြေစာပုံ ပြောင်းလဲခြင်း
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64Data = reader.result;
+
+          // ၂။ Supabase Database ထဲ ထည့်သွင်းခြင်း
+          await supabaseClient.from('topup_requests').insert([{
+            user_id: currentUser.id,
+            username: buyerName,
+            payment_method: method,
+            account_name: accName,
+            amount: amount,
+            slip_url: base64Data,
+            status: 'pending'
+          }]);
+
+          // ၃။ Telegram Bot သို့ Photo + Caption တိုက်ရိုက်ပို့ခြင်း
+          const caption = `🔔 *ငွေဖြည့်တောင်းဆိုချက်အသစ် ရောက်ရှိပါသည်!*\n\n👤 *User:* ${buyerName}\n💳 *Payment:* ${method}\n📝 *Sender Name:* ${accName}\n💰 *Amount:* ${amount.toLocaleString()} MMK\n\nAdmin Dashboard တွင် စစ်ဆေး၍ Approve လုပ်ပေးနိုင်ပါသည်။`;
+
+          const formData = new FormData();
+          formData.append('chat_id', TELEGRAM_OWNER_ID);
+          formData.append('photo', file);
+          formData.append('caption', caption);
+          formData.append('parse_mode', 'Markdown');
+
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+          });
+
+          alert('🎉 ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်ပါသည်! Admin မှ စစ်ဆေးပြီး မကြာမီ ငွေဖြည့်ပေးပါမည်။');
+          closeTopupModal();
+          document.getElementById('topupFormUser').reset();
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🚀 ငွေဖြည့်တောင်းဆိုချက် ပေးပို့မည်';
+        };
+
+      } catch (err) {
+        alert('Error: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 ငွေဖြည့်တောင်းဆိုချက် ပေးပို့မည်';
+      }
+    });
+
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      const { data: products, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+
+      if (error || !products || products.length === 0) {
+        grid.innerHTML = '<p class="text-slate-500 col-span-3 text-center py-6">ရောင်းရန် Account မရှိသေးပါ</p>';
+        return;
+      }
       allProducts = products;
       renderProducts();
     }
 
     function filterCategory(cat) {
       currentCategory = cat;
-
       document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.className = "cat-btn bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5";
+        btn.className = "cat-btn bg-slate-900 border border-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95";
       });
       const activeBtn = document.getElementById(`btn-${cat}`);
-      if (activeBtn) {
-        activeBtn.className = "cat-btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/25 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95 transition flex items-center gap-1.5";
-      }
-
+      if (activeBtn) activeBtn.className = "cat-btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap active:scale-95";
       renderProducts();
     }
 
@@ -217,17 +315,9 @@
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
 
-      const filtered = currentCategory === 'All' 
-        ? allProducts 
-        : allProducts.filter(p => p.category === currentCategory);
-
+      const filtered = currentCategory === 'All' ? allProducts : allProducts.filter(p => p.category === currentCategory);
       if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-12 glass-card rounded-2xl space-y-2">
-            <span class="text-3xl">🔍</span>
-            <p class="text-slate-400 text-sm font-semibold">ဤ Category တွင် အကောင့်မရှိသေးပါ</p>
-          </div>
-        `;
+        grid.innerHTML = '<p class="text-slate-500 col-span-3 text-center py-6">ဤ Category တွင် အကောင့်မရှိသေးပါ</p>';
         return;
       }
 
@@ -237,42 +327,20 @@
         card.className = "glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-xl";
         card.innerHTML = `
           <div class="space-y-2">
-            <!-- Badge & Category -->
-            <div class="flex justify-between items-center gap-2">
-              <span class="text-[10px] uppercase tracking-wider font-extrabold bg-blue-950/80 text-blue-300 border border-blue-800/60 px-2.5 py-1 rounded-lg">
-                ${p.category || 'V4 Account'}
-              </span>
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${hasStock ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-800/40' : 'text-rose-400 bg-rose-950/40 border border-rose-800/40'}">
-                ${hasStock ? `Stock: ${p.stock_count}` : 'Sold Out'}
-              </span>
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-extrabold bg-blue-950/80 text-blue-300 border border-blue-800/60 px-2.5 py-1 rounded-lg">${p.category || 'V4 Account'}</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${hasStock ? 'text-cyan-400 bg-cyan-950/40' : 'text-rose-400 bg-rose-950/40'}">${hasStock ? `Stock: ${p.stock_count}` : 'Sold Out'}</span>
             </div>
-
-            <!-- Title -->
-            <h3 class="font-bold text-base md:text-lg text-white leading-snug tracking-tight">
-              ${p.title}
-            </h3>
-
-            <!-- Description -->
-            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed whitespace-pre-line bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50">
-              ${p.description || 'အသေးစိတ်အချက်အလက် မရှိပါ'}
-            </p>
+            <h3 class="font-bold text-base md:text-lg text-white">${p.title}</h3>
+            <p class="text-xs text-slate-400 line-clamp-3 whitespace-pre-line bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50">${p.description || ''}</p>
           </div>
-
-          <!-- Price & Purchase Action -->
           <div class="space-y-3 pt-2 border-t border-slate-800/60">
             <div class="flex justify-between items-baseline">
-              <span class="text-xs text-slate-400 font-medium">ဈေးနှုန်း:</span>
-              <div class="text-right">
-                <span class="gaming-font text-emerald-400 font-extrabold text-lg">${Number(p.price).toLocaleString()}</span>
-                <span class="text-[10px] text-emerald-500 font-bold ml-0.5">MMK</span>
-              </div>
+              <span class="text-xs text-slate-400">ဈေးနှုန်း:</span>
+              <span class="gaming-font text-emerald-400 font-extrabold text-lg">${Number(p.price).toLocaleString()} <span class="text-xs font-normal">MMK</span></span>
             </div>
-
-            <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" 
-              ${!hasStock ? 'disabled' : ''} 
-              class="w-full py-3 rounded-xl font-bold text-xs md:text-sm tracking-wide active:scale-[0.98] transition flex items-center justify-center gap-2 shadow-lg ${hasStock ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:brightness-110 text-white shadow-blue-600/30' : 'bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed'}">
-              <span>🛒</span>
-              <span>${hasStock ? 'ယခုဝယ်ယူမည် (Buy Now)' : 'ပစ္စည်းပြတ်သွားပါပြီ'}</span>
+            <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" ${!hasStock ? 'disabled' : ''} class="w-full py-3 rounded-xl font-bold text-xs ${hasStock ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white shadow-lg shadow-blue-600/30' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">
+              ${hasStock ? '🛒 ယခုဝယ်ယူမည် (Buy Now)' : 'ပစ္စည်းပြတ်သွားပါပြီ'}
             </button>
           </div>
         `;
@@ -282,46 +350,27 @@
 
     async function buyProduct(id, title, price, stock) {
       if (!currentUser) {
-        alert('အကောင့်ဝယ်ယူရန် Login အရင်ဝင်ပေးပါ');
-        window.location.href = 'login.html';
+        alert('အကောင့်ဝယ်ယူရန် Login အရင်ဝင်ပါ');
+        location.href = 'login.html';
         return;
       }
-
       if ((userProfile.wallet_balance || 0) < price) {
-        alert(`လက်ကျန်ငွေ မလုံလောက်ပါ!\n\nလိုအပ်သောငွေ: ${price.toLocaleString()} MMK\nသင့်လက်ကျန်ငွေ: ${(userProfile.wallet_balance || 0).toLocaleString()} MMK\n\nAdmin ထံ ငွေဖြည့်ပေးရန် ဆက်သွယ်ပါ။`);
+        alert(`လက်ကျန်ငွေ မလုံလောက်ပါ!\nလိုအပ်သောငွေ: ${price.toLocaleString()} MMK\nသင့်လက်ကျန်ငွေ: ${(userProfile.wallet_balance || 0).toLocaleString()} MMK\n\nအပေါ်က "ငွေဖြည့်မည်" ခလုတ်ကို နှိပ်၍ ငွေဖြည့်ပေးပါ။`);
         return;
       }
-
       if (!confirm(`"${title}" ကို ${price.toLocaleString()} MMK ဖြင့် ဝယ်ယူမှာ သေချာပါသလား?`)) return;
 
       try {
-        const buyerName = userProfile.username || currentUser.user_metadata?.username || currentUser.email;
+        const buyerName = userProfile.username || currentUser.email;
+        await supabaseClient.from('orders').insert([{
+          user_id: currentUser.id, product_title: title, price: price, status: 'pending', admin_note: buyerName
+        }]);
 
-        const { error: orderError } = await supabaseClient
-          .from('orders')
-          .insert([{
-            user_id: currentUser.id,
-            product_title: title,
-            price: price,
-            status: 'pending',
-            admin_note: buyerName
-          }]);
+        await supabaseClient.from('profiles').update({ wallet_balance: userProfile.wallet_balance - price }).eq('id', currentUser.id);
+        await supabaseClient.from('products').update({ stock_count: Math.max(0, stock - 1) }).eq('id', id);
 
-        if (orderError) throw orderError;
-
-        await supabaseClient
-          .from('profiles')
-          .update({ wallet_balance: userProfile.wallet_balance - price })
-          .eq('id', currentUser.id);
-
-        await supabaseClient
-          .from('products')
-          .update({ stock_count: Math.max(0, stock - 1) })
-          .eq('id', id);
-
-        alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! Admin မှ အကောင့်အချက်အလက်ကို Inbox ထဲ ပို့ပေးပါမည်။');
-        window.location.href = 'inbox.html';
-
+        alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! Admin မှ အကောင့်ပို့ပေးပါမည်။');
+        location.href = 'inbox.html';
       } catch (err) {
         alert('Error: ' + err.message);
       }
@@ -330,4 +379,4 @@
     initShop();
   </script>
 </body>
-</html>
+  </html>
