@@ -5,64 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Blox Fruit</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-white min-h-screen p-4 md:p-6">
   <div class="max-w-6xl mx-auto space-y-8">
     
-    <!-- Top Header -->
+    <!-- Header -->
     <div class="flex justify-between items-center border-b border-gray-800 pb-4 flex-wrap gap-3">
       <div>
         <h1 class="text-2xl font-bold text-red-500">🛠️ Admin Control Panel</h1>
         <p class="text-xs text-gray-400">Owner: htetmyato709@gmail.com</p>
       </div>
       <div class="space-x-2">
-        <a href="index.html" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition">Shop သို့သွားရန်</a>
-        <button onclick="supabaseClient.auth.signOut().then(() => location.href='login.html')" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-bold transition">Logout</button>
+        <a href="index.html" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm">Shop သို့</a>
+        <button onclick="supabaseClient.auth.signOut().then(() => location.href='login.html')" class="bg-red-600 px-4 py-2 rounded-lg text-sm font-bold">Logout</button>
       </div>
     </div>
 
-    <!-- Direct Top-up Section -->
+    <!-- 1. Topup Requests Section (User များ လှမ်းဖြည့်ထားသော စာရင်း) -->
+    <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4 shadow-xl">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-bold text-emerald-400 flex items-center gap-2">
+          <span>📥</span> ငွေဖြည့်တောင်းဆိုမှုများ (Top-up Requests)
+        </h2>
+        <button onclick="loadTopupRequests()" class="text-xs bg-gray-800 px-3 py-1.5 rounded-lg text-gray-300">🔄 Refresh</button>
+      </div>
+      <div id="topupRequestsList" class="space-y-3">
+        <p class="text-gray-500 text-sm">ဆွဲယူနေပါသည်...</p>
+      </div>
+    </div>
+
+    <!-- 2. Manual Top-up Section -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-xl shadow-xl">
-      <h2 class="text-lg font-bold text-emerald-400 mb-4 flex items-center gap-2">
-        <span>💰</span> User ထံ ငွေတိုက်ရိုက်ဖြည့်ပေးရန်
+      <h2 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+        <span>💰</span> User ထံ ငွေကိုယ်တိုင် တိုက်ရိုက်ဖြည့်ရန်
       </h2>
-      <form id="topupForm" class="space-y-4">
+      <form id="manualTopupForm" class="space-y-3">
         <div>
           <label class="block text-xs text-gray-400 mb-1">User ၏ Username သို့မဟုတ် Email</label>
-          <input type="text" id="topupUser" required placeholder="ဥပမာ - Admin သို့မဟုတ် name@gmail.com" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+          <input type="text" id="topupUser" required placeholder="Username သို့မဟုတ် Email" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">ဖြည့်ပေးမည့် ငွေပမာဏ (MMK)</label>
-          <input type="number" id="topupAmount" required placeholder="5000" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+          <input type="number" id="topupAmount" required placeholder="5000" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
         </div>
-        <button type="submit" id="topupBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2.5 rounded-lg text-sm transition">ငွေဖြည့်မည် (Add Balance)</button>
+        <button type="submit" id="manualTopupBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 font-bold py-2.5 rounded-lg text-sm">ငွေဖြည့်မည်</button>
       </form>
     </div>
 
-    <!-- Orders Section -->
+    <!-- 3. Pending Orders -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4 shadow-xl">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-yellow-400 flex items-center gap-2">
-          <span>📦</span> အကောင့်ပို့ပေးရန် စောင့်ဆိုင်းနေသော Orders (Pending)
+          <span>📦</span> အကောင့်ပို့ပေးရန် Orders (Pending)
         </h2>
-        <button onclick="loadPendingOrders()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-gray-300">🔄 Refresh</button>
+        <button onclick="loadPendingOrders()" class="text-xs bg-gray-800 px-3 py-1.5 rounded-lg text-gray-300">🔄 Refresh</button>
       </div>
       <div id="adminOrders" class="space-y-3">
-        <p class="text-gray-500">ဆွဲယူနေပါသည်...</p>
+        <p class="text-gray-500 text-sm">ဆွဲယူနေပါသည်...</p>
       </div>
     </div>
 
-    <!-- Product Management Section -->
+    <!-- 4. Product Management -->
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-6 shadow-xl">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-blue-400 flex items-center gap-2">
           <span>🎮</span> Blox Fruit ပစ္စည်းများ စီမံခန့်ခွဲရန်
         </h2>
-        <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition">+ Account အသစ်ထည့်မည်</button>
+        <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold">+ Account အသစ်ထည့်မည်</button>
       </div>
-      
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm text-gray-400">
           <thead class="bg-gray-800 text-gray-200">
@@ -81,13 +92,12 @@
 
   </div>
 
-  <!-- Add/Edit Product Modal -->
+  <!-- Modal for Product Add/Edit -->
   <div id="addProductModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
     <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
       <h3 id="modalTitle" class="text-lg font-bold text-white">Add Blox Fruit Account</h3>
       <input type="hidden" id="editProductId">
 
-      <!-- Category Selection Buttons -->
       <div>
         <label class="block text-xs text-gray-400 mb-2">Category ရွေးချယ်ပါ</label>
         <div class="grid grid-cols-2 gap-2" id="modalCategoryGroup">
@@ -101,25 +111,25 @@
 
       <div>
         <label class="block text-xs text-gray-400 mb-1">Title</label>
-        <input type="text" id="prodTitle" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="Max Level + CDK + Human V4">
+        <input type="text" id="prodTitle" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" placeholder="Max Level + CDK">
       </div>
       <div>
         <label class="block text-xs text-gray-400 mb-1">Description</label>
-        <textarea id="prodDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="အသေးစိတ်အချက်အလက်"></textarea>
+        <textarea id="prodDesc" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white"></textarea>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs text-gray-400 mb-1">Price (MMK)</label>
-          <input type="number" id="prodPrice" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="4000">
+          <input type="number" id="prodPrice" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Stock</label>
-          <input type="number" id="prodStock" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-blue-500" value="1">
+          <input type="number" id="prodStock" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-white" value="1">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeProductModal()" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-300">Cancel</button>
-        <button id="saveProdBtn" onclick="saveProduct()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-sm font-bold text-white transition">Save</button>
+        <button onclick="closeProductModal()" class="bg-gray-800 px-4 py-2 rounded-lg text-sm">Cancel</button>
+        <button id="saveProdBtn" onclick="saveProduct()" class="bg-blue-600 px-5 py-2 rounded-lg text-sm font-bold">Save</button>
       </div>
     </div>
   </div>
@@ -132,71 +142,114 @@
     async function initAdmin() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session || session.user.email.toLowerCase() !== 'htetmyato709@gmail.com') {
-        window.location.href = 'login.html';
+        location.href = 'login.html';
         return;
       }
+      loadTopupRequests();
       loadPendingOrders();
       loadProducts();
     }
 
-    // Direct Topup
-    document.getElementById('topupForm').addEventListener('submit', async (e) => {
+    // 1. Load User Topup Requests (Approve / Reject)
+    async function loadTopupRequests() {
+      const { data: list, error } = await supabaseClient
+        .from('topup_requests')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      const container = document.getElementById('topupRequestsList');
+      container.innerHTML = '';
+
+      if (error || !list || list.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">စစ်ဆေးရန် ငွေဖြည့်တောင်းဆိုချက် မရှိပါ</p>';
+        return;
+      }
+
+      list.forEach(req => {
+        const div = document.createElement('div');
+        div.className = "bg-gray-800 border border-gray-700 p-4 rounded-xl flex justify-between items-center flex-wrap gap-3";
+        div.innerHTML = `
+          <div class="space-y-1">
+            <p class="font-bold text-white text-sm">👤 User: <span class="text-blue-400">${req.username}</span></p>
+            <p class="text-xs text-gray-300">💳 Payment: <b class="text-yellow-400">${req.payment_method}</b> (Sender: <b>${req.account_name}</b>)</p>
+            <p class="text-xs text-emerald-400 font-bold">💰 Amount: ${Number(req.amount).toLocaleString()} MMK</p>
+            ${req.slip_url ? `<a href="${req.slip_url}" target="_blank" class="inline-block text-xs text-cyan-400 underline mt-1">📸 ပြေစာ Screenshot ကြည့်ရန်</a>` : ''}
+          </div>
+          <div class="flex gap-2">
+            <button onclick="approveTopup('${req.id}', '${req.user_id}', ${req.amount}, '${req.username}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+              ✅ Approve (ငွေသွင်းမည်)
+            </button>
+            <button onclick="rejectTopup('${req.id}')" class="bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+              ❌ Reject
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function approveTopup(reqId, userId, amount, username) {
+      if (!confirm(`${username} ထံသို့ ${amount} MMK ငွေဖြည့်သွင်းပေးမှာ သေချာပါသလား?`)) return;
+
+      try {
+        const { data: user } = await supabaseClient.from('profiles').select('wallet_balance').eq('id', userId).single();
+        const newBal = (Number(user?.wallet_balance) || 0) + Number(amount);
+
+        // Update Balance
+        await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', userId);
+        // Update Request Status
+        await supabaseClient.from('topup_requests').update({ status: 'approved' }).eq('id', reqId);
+
+        alert(`✅ ${username} ထံ ${amount} MMK အောင်မြင်စွာ ဖြည့်သွင်းပြီးပါပြီ!`);
+        loadTopupRequests();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function rejectTopup(reqId) {
+      if (!confirm('ဤငွေဖြည့်တောင်းဆိုမှုကို ပယ်ဖျက် (Reject) မှာ သေချာပါသလား?')) return;
+      await supabaseClient.from('topup_requests').update({ status: 'rejected' }).eq('id', reqId);
+      loadTopupRequests();
+    }
+
+    // 2. Manual Topup
+    document.getElementById('manualTopupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const usernameInput = document.getElementById('topupUser').value.trim();
+      const input = document.getElementById('topupUser').value.trim();
       const amount = parseFloat(document.getElementById('topupAmount').value);
-      const btn = document.getElementById('topupBtn');
+      const btn = document.getElementById('manualTopupBtn');
 
       btn.disabled = true;
       btn.textContent = 'ဖြည့်သွင်းနေပါသည်...';
 
       try {
-        const { data: users, error: findError } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .or(`username.ilike.${usernameInput},email.ilike.${usernameInput}`);
-
-        if (findError || !users || users.length === 0) {
-          alert(`"${usernameInput}" အမည်ရှိ User ရှာမတွေ့ပါ!`);
+        const { data: users } = await supabaseClient.from('profiles').select('*').or(`username.ilike.${input},email.ilike.${input}`);
+        if (!users || users.length === 0) {
+          alert(`"${input}" အမည်ရှိ User ရှာမတွေ့ပါ!`);
           return;
         }
 
-        const targetUser = users[0];
-        const currentBal = Number(targetUser.wallet_balance) || 0;
-        const newBal = currentBal + amount;
+        const target = users[0];
+        const newBal = (Number(target.wallet_balance) || 0) + amount;
+        await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', target.id);
 
-        const { error: updateError } = await supabaseClient
-          .from('profiles')
-          .update({ wallet_balance: newBal })
-          .eq('id', targetUser.id);
-
-        if (updateError) throw updateError;
-
-        alert(`အောင်မြင်ပါသည်! ${targetUser.username} ထံသို့ ${amount} MMK ဖြည့်သွင်းပြီးပါပြီ။ (လက်ကျန်: ${newBal} MMK)`);
-        document.getElementById('topupForm').reset();
-
+        alert(`အောင်မြင်ပါသည်! ${target.username} ထံသို့ ${amount} MMK ဖြည့်သွင်းပြီးပါပြီ။`);
+        document.getElementById('manualTopupForm').reset();
       } catch (err) {
         alert('Error: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'ငွေဖြည့်မည် (Add Balance)';
+        btn.textContent = 'ငွေဖြည့်မည်';
       }
     });
 
-    // Orders & Deliver
+    // 3. Orders & Deliver
     async function loadPendingOrders() {
-      const { data: orders, error } = await supabaseClient
-        .from('orders')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
+      const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: false });
       const container = document.getElementById('adminOrders');
       container.innerHTML = '';
-
-      if (error) {
-        container.innerHTML = `<p class="text-red-400 text-sm">Error: ${error.message}</p>`;
-        return;
-      }
 
       if (!orders || orders.length === 0) {
         container.innerHTML = '<p class="text-gray-500 text-sm">ပို့ရန်ကျန်သော Order မရှိပါ</p>';
@@ -209,11 +262,11 @@
         div.className = "bg-gray-800 border border-gray-700 p-4 rounded-xl flex justify-between items-center flex-wrap gap-3";
         div.innerHTML = `
           <div>
-            <p class="font-bold text-white text-base">${order.product_title}</p>
-            <p class="text-xs text-blue-400 font-semibold mt-1">👤 Buyer Account: <span class="text-white">${buyer}</span></p>
-            <p class="text-xs text-gray-400 mt-0.5">Price: ${order.price} MMK | Order ID: ${order.id.slice(0, 8)}...</p>
+            <p class="font-bold text-white">${order.product_title}</p>
+            <p class="text-xs text-blue-400 font-semibold mt-1">👤 Buyer: <span class="text-white">${buyer}</span></p>
+            <p class="text-xs text-gray-400">Price: ${order.price} MMK</p>
           </div>
-          <button onclick="deliverOrderPrompt('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-xs font-bold transition">
+          <button onclick="deliverOrderPrompt('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-xs font-bold">
             Account ပို့မည် (Deliver)
           </button>
         `;
@@ -227,22 +280,18 @@
       const password = prompt("Roblox Password ထည့်ပါ:");
       if (!password) return;
 
-      const { error } = await supabaseClient.from('orders').update({
+      await supabaseClient.from('orders').update({
         delivered_username: username.trim(),
         delivered_password: password.trim(),
         status: 'completed',
         completed_at: new Date().toISOString()
       }).eq('id', orderId);
 
-      if (error) {
-        alert("Error: " + error.message);
-      } else {
-        alert("User ထံ အကောင့်အချက်အလက် ပို့ဆောင်ပြီးပါပြီ!");
-        loadPendingOrders();
-      }
+      alert("User ထံ အကောင့်အချက်အလက် ပို့ဆောင်ပြီးပါပြီ!");
+      loadPendingOrders();
     }
 
-    // Category Select Handler in Modal
+    // 4. Products CRUD
     function selectModalCategory(cat) {
       document.getElementById('prodCategory').value = cat;
       document.querySelectorAll('.modal-cat-btn').forEach(btn => {
@@ -254,13 +303,8 @@
       });
     }
 
-    // Products CRUD
     async function loadProducts() {
-      const { data: products, error } = await supabaseClient
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data: products } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('productsTableBody');
       tbody.innerHTML = '';
 
@@ -287,7 +331,6 @@
       document.getElementById('prodPrice').value = '';
       document.getElementById('prodStock').value = '1';
       selectModalCategory('V4 Account');
-      document.getElementById('modalTitle').textContent = 'Add Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
 
@@ -298,7 +341,6 @@
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodStock').value = p.stock_count;
       selectModalCategory(p.category || 'V4 Account');
-      document.getElementById('modalTitle').textContent = 'Edit Blox Fruit Account';
       document.getElementById('addProductModal').classList.remove('hidden');
     }
 
@@ -313,36 +355,16 @@
       const description = document.getElementById('prodDesc').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value);
       const stock_count = parseInt(document.getElementById('prodStock').value);
-      const btn = document.getElementById('saveProdBtn');
 
-      if (!title || isNaN(price) || isNaN(stock_count)) {
-        alert('Title, Price နှင့် Stock ကို ပြည့်စုံစွာ ဖြည့်ပေးပါ');
-        return;
+      const payload = { category, title, description, price, stock_count };
+      if (id) {
+        await supabaseClient.from('products').update(payload).eq('id', id);
+      } else {
+        await supabaseClient.from('products').insert([payload]);
       }
 
-      btn.disabled = true;
-      btn.textContent = 'သိမ်းဆည်းနေပါသည်...';
-
-      try {
-        let res;
-        const payload = { category, title, description, price, stock_count };
-
-        if (id) {
-          res = await supabaseClient.from('products').update(payload).eq('id', id);
-        } else {
-          res = await supabaseClient.from('products').insert([payload]);
-        }
-
-        if (res.error) throw res.error;
-
-        closeProductModal();
-        loadProducts();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Save';
-      }
+      closeProductModal();
+      loadProducts();
     }
 
     async function deleteProduct(id) {
