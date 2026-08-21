@@ -100,8 +100,8 @@
         <button type="submit" id="submitTopupBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white">🚀 ငွေဖြည့်တောင်းဆိုမည်</button>
       </form>
     </div>
-      </div>
-      <script>
+  </div>
+   <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -156,34 +156,84 @@
     }
     function closeTopupModal() { document.getElementById('topupModal').classList.add('hidden'); }
 
+    // Top-up Submit (Auto Image Compress + Direct Supabase & Telegram)
     document.getElementById('topupFormUser').addEventListener('submit', async (e) => {
       e.preventDefault();
       const method = document.getElementById('userPaymentMethod').value;
       const accName = document.getElementById('userPayAccountName').value.trim();
       const amount = parseFloat(document.getElementById('userTopupAmount').value);
-      const file = document.getElementById('userSlipFile').files[0];
+      const fileInput = document.getElementById('userSlipFile');
       const btn = document.getElementById('submitTopupBtn');
 
-      btn.disabled = true; btn.textContent = 'ပေးပို့နေပါသည်...';
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        try {
-          const buyer = userProfile?.username || currentUser.email;
-          await supabaseClient.from('topup_requests').insert([{ user_id: currentUser.id, username: buyer, payment_method: method, account_name: accName, amount, slip_url: reader.result, status: 'pending' }]);
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('ငွေလွှဲပြေစာ Screenshot ထည့်ပေးပါ');
+        return;
+      }
 
-          const formData = new FormData();
-          formData.append('chat_id', TELEGRAM_OWNER_ID);
-          formData.append('photo', file);
-          formData.append('caption', `🔔 *ငွေဖြည့်တောင်းဆိုချက်အသစ်*\n👤 User: ${buyer}\n💳 Payment: ${method}\n📝 Sender: ${accName}\n💰 Amount: ${amount.toLocaleString()} MMK`);
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+      const file = fileInput.files[0];
+      btn.disabled = true;
+      btn.textContent = 'စနစ်ထဲသို့ ပို့ဆောင်နေပါသည်...';
 
-          alert('🎉 ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်ပါသည်!');
-          closeTopupModal();
-          document.getElementById('topupFormUser').reset();
-        } catch (err) { alert(err.message); }
-        finally { btn.disabled = false; btn.textContent = '🚀 ငွေဖြည့်တောင်းဆိုမည်'; }
-      };
+      try {
+        const buyerName = userProfile?.username || currentUser.email;
+
+        // Compress image to small size
+        const compressImage = (imageFile) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(imageFile);
+            reader.onload = (event) => {
+              const img = new Image();
+              img.src = event.target.result;
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600;
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                canvas.height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.6));
+              };
+            };
+          });
+        };
+
+        const compressedBase64 = await compressImage(file);
+
+        // ၁။ Supabase Database ထဲ ထည့်ခြင်း
+        const { error: dbError } = await supabaseClient.from('topup_requests').insert([{
+          user_id: currentUser.id,
+          username: buyerName,
+          payment_method: method,
+          account_name: accName,
+          amount: amount,
+          slip_url: compressedBase64,
+          status: 'pending'
+        }]);
+
+        if (dbError) throw dbError;
+
+        // ၂။ Telegram Bot သို့ ပေးပို့ခြင်း
+        const caption = `🔔 *ငွေဖြည့်တောင်းဆိုချက်အသစ်*\n\n👤 *User:* ${buyerName}\n💳 *Payment:* ${method}\n📝 *Sender:* ${accName}\n💰 *Amount:* ${amount.toLocaleString()} MMK`;
+        const formData = new FormData();
+        formData.append('chat_id', TELEGRAM_OWNER_ID);
+        formData.append('photo', file);
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'Markdown');
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData }).catch(e => console.log(e));
+
+        alert('🎉 ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်ပါသည်! Admin Dashboard ထဲသို့ တန်းရောက်သွားပါပြီ။');
+        closeTopupModal();
+        document.getElementById('topupFormUser').reset();
+
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 ငွေဖြည့်တောင်းဆိုမည်';
+      }
     });
 
     async function loadProducts() {
