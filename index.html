@@ -127,7 +127,7 @@
         <button type="submit" id="submitTopupBtn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl shadow-lg active:scale-95 transition">🚀 Submit Request</button>
       </form>
     </div>
-  </div>
+          </div>
     <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
@@ -251,6 +251,7 @@
       renderProducts();
     }
 
+    // Account Name အပြည့်အစုံ နှင့် Description စာသားအဖြူရောင်တောက်တောက်
     function renderProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
@@ -260,28 +261,38 @@
       filtered.forEach(p => {
         const hasStock = p.stock_count > 0;
         const row = document.createElement('div');
-        row.className = "account-item p-4 flex justify-between items-center gap-3";
+        row.className = "account-item p-4 flex justify-between items-start gap-3";
         row.innerHTML = `
-          <div class="space-y-1.5 flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="category-badge text-[10px] font-black px-2 py-0.5 rounded-md">
+          <div class="space-y-1.5 flex-1">
+            <!-- Badge & Full Title -->
+            <div class="flex items-start gap-2 flex-wrap">
+              <span class="category-badge text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 mt-0.5">
                 ${p.category || 'V4 Account'}
               </span>
-              <span class="text-xs font-black text-slate-100 uppercase tracking-wide truncate">
+              <span class="text-xs md:text-sm font-black text-slate-100 uppercase tracking-wide leading-snug">
                 ${p.title}
               </span>
             </div>
 
-            <div class="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap">
+            <!-- Description (အဖြူရောင်တောက်တောက် အသေးလေးဖြင့် စီစီရီရီ ပြသခြင်း) -->
+            ${p.description ? `
+              <div class="text-[11px] text-slate-100 font-medium whitespace-pre-line leading-relaxed bg-slate-950/40 p-2 rounded-xl border border-slate-800/60 mt-1">
+                ${p.description}
+              </div>
+            ` : ''}
+
+            <!-- Stock & Delivery Status -->
+            <div class="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap pt-0.5">
               <span class="text-emerald-400 font-bold flex items-center gap-1">
                 <span>📦</span> Stock: ${p.stock_count}
               </span>
-              <span class="text-slate-500">•</span>
+              <span class="text-slate-600">•</span>
               <span class="text-emerald-400 font-medium">✓ Instant Sent</span>
             </div>
           </div>
 
-          <div class="flex flex-col items-end gap-1.5 shrink-0">
+          <!-- Price & Buy Button -->
+          <div class="flex flex-col items-end gap-1.5 shrink-0 pt-0.5">
             <span class="text-base md:text-lg font-black text-amber-400">
               ${Number(p.price).toLocaleString()} Ks
             </span>
