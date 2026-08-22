@@ -127,8 +127,8 @@
         <button type="submit" id="submitTopupBtn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl shadow-lg active:scale-95 transition">🚀 Submit Request</button>
       </form>
     </div>
-          </div>
-    <script>
+            </div>
+        <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -251,7 +251,6 @@
       renderProducts();
     }
 
-    // Account Name အပြည့်အစုံ နှင့် Description စာသားအဖြူရောင်တောက်တောက်
     function renderProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
@@ -261,50 +260,55 @@
       filtered.forEach(p => {
         const hasStock = p.stock_count > 0;
         const row = document.createElement('div');
-        row.className = "account-item p-4 flex justify-between items-start gap-3";
+        row.className = "account-item p-4 flex flex-col gap-2";
         row.innerHTML = `
-          <div class="space-y-1.5 flex-1">
-            <!-- Badge & Full Title -->
-            <div class="flex items-start gap-2 flex-wrap">
-              <span class="category-badge text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 mt-0.5">
-                ${p.category || 'V4 Account'}
-              </span>
-              <span class="text-xs md:text-sm font-black text-slate-100 uppercase tracking-wide leading-snug">
-                ${p.title}
-              </span>
-            </div>
-
-            <!-- Description (အဖြူရောင်တောက်တောက် အသေးလေးဖြင့် စီစီရီရီ ပြသခြင်း) -->
-            ${p.description ? `
-              <div class="text-[11px] text-slate-100 font-medium whitespace-pre-line leading-relaxed bg-slate-950/40 p-2 rounded-xl border border-slate-800/60 mt-1">
-                ${p.description}
+          <div class="flex justify-between items-start gap-3 w-full">
+            <div class="space-y-1.5 flex-1 min-w-0">
+              <div class="flex items-start gap-2 flex-wrap">
+                <span class="category-badge text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 mt-0.5">${p.category || 'V4 Account'}</span>
+                <span class="text-xs md:text-sm font-black text-slate-100 uppercase tracking-wide leading-snug">${p.title}</span>
               </div>
-            ` : ''}
+              
+              <div class="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap pt-0.5">
+                <span class="text-emerald-400 font-bold flex items-center gap-1">
+                  <span>📦</span> Stock: ${p.stock_count}
+                </span>
+                <span class="text-slate-600">•</span>
+                <span class="text-emerald-400 font-medium">✓ Instant Sent</span>
+                ${p.description ? `
+                  <span class="text-slate-600">•</span>
+                  <button onclick="toggleDescription('${p.id}')" class="text-amber-400 hover:text-amber-300 font-bold text-[11px] flex items-center gap-0.5 transition">
+                    <span>📄 Description</span> <span>▼</span>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
 
-            <!-- Stock & Delivery Status -->
-            <div class="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap pt-0.5">
-              <span class="text-emerald-400 font-bold flex items-center gap-1">
-                <span>📦</span> Stock: ${p.stock_count}
-              </span>
-              <span class="text-slate-600">•</span>
-              <span class="text-emerald-400 font-medium">✓ Instant Sent</span>
+            <div class="flex flex-col items-end gap-1.5 shrink-0">
+              <span class="text-base md:text-lg font-black text-amber-400">${Number(p.price).toLocaleString()} Ks</span>
+              <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" 
+                ${!hasStock ? 'disabled' : ''} 
+                class="gold-btn text-xs font-extrabold px-4 py-2 rounded-xl flex items-center gap-1.5 ${!hasStock ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}">
+                <span>🛒</span> <span>${hasStock ? 'Buy Now' : 'Sold Out'}</span>
+              </button>
             </div>
           </div>
 
-          <!-- Price & Buy Button -->
-          <div class="flex flex-col items-end gap-1.5 shrink-0 pt-0.5">
-            <span class="text-base md:text-lg font-black text-amber-400">
-              ${Number(p.price).toLocaleString()} Ks
-            </span>
-            <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" 
-              ${!hasStock ? 'disabled' : ''} 
-              class="gold-btn text-xs font-extrabold px-4 py-2 rounded-xl flex items-center gap-1.5 ${!hasStock ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}">
-              <span>🛒</span> <span>${hasStock ? 'Buy Now' : 'Sold Out'}</span>
-            </button>
-          </div>
+          ${p.description ? `
+            <div id="desc-${p.id}" class="hidden text-[11px] text-slate-100 font-medium whitespace-pre-line leading-relaxed bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 mt-1">
+              ${p.description}
+            </div>
+          ` : ''}
         `;
         grid.appendChild(row);
       });
+    }
+
+    function toggleDescription(id) {
+      const descDiv = document.getElementById('desc-' + id);
+      if (descDiv) {
+        descDiv.classList.toggle('hidden');
+      }
     }
 
     async function buyProduct(id, title, price, stock) {
