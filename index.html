@@ -127,8 +127,8 @@
         <button type="submit" id="submitTopupBtn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl shadow-lg active:scale-95 transition">🚀 Submit Request</button>
       </form>
     </div>
-            </div>
-        <script>
+  </div>
+    <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -286,7 +286,7 @@
 
             <div class="flex flex-col items-end gap-1.5 shrink-0">
               <span class="text-base md:text-lg font-black text-amber-400">${Number(p.price).toLocaleString()} Ks</span>
-              <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price}, ${p.stock_count})" 
+              <button onclick="buyProduct('${p.id}', '${p.title}', ${p.price})" 
                 ${!hasStock ? 'disabled' : ''} 
                 class="gold-btn text-xs font-extrabold px-4 py-2 rounded-xl flex items-center gap-1.5 ${!hasStock ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}">
                 <span>🛒</span> <span>${hasStock ? 'Buy Now' : 'Sold Out'}</span>
@@ -311,18 +311,70 @@
       }
     }
 
-    async function buyProduct(id, title, price, stock) {
+    // Auto N/P Sending System
+    async function buyProduct(id, title, price) {
       if (!currentUser) { alert('Login ဝင်ပါ'); location.href = 'login.html'; return; }
       if ((userProfile.wallet_balance || 0) < price) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ! ငွေဖြည့်ပေးပါ။'); return; }
       if (!confirm(`"${title}" ကို ${price.toLocaleString()} Ks ဖြင့် ဝယ်ယူမှာ သေချာပါသလား?`)) return;
 
       try {
-        await supabaseClient.from('orders').insert([{ user_id: currentUser.id, product_title: title, price, status: 'pending', admin_note: userProfile.username }]);
-        await supabaseClient.from('profiles').update({ wallet_balance: userProfile.wallet_balance - price }).eq('id', currentUser.id);
-        await supabaseClient.from('products').update({ stock_count: Math.max(0, stock - 1) }).eq('id', id);
-        alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်!');
+        // နောက်ဆုံး Product အချက်အလက်နှင့် N/P စာရင်းကို စစ်ဆေးခြင်း
+        const { data: prod, error: pErr } = await supabaseClient.from('products').select('*').eq('id', id).single();
+        if (pErr || !prod || prod.stock_count <= 0) {
+          alert('ပစ္စည်းပြတ်သွားပါပြီ!');
+          return;
+        }
+
+        let rawAccounts = (prod.accounts_data || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let isAutoDelivered = false;
+        let delUser = null;
+        let delPass = null;
+
+        // Auto N/P ရှိပါက ထိပ်ဆုံးတစ်ခု ထုတ်ယူပြီး ဖျက်ပစ်ခြင်း
+        if (rawAccounts.length > 0) {
+          const targetAcc = rawAccounts.shift();
+          const separator = targetAcc.includes(':') ? ':' : (targetAcc.includes('|') ? '|' : ' ');
+          const parts = targetAcc.split(separator);
+          
+          delUser = parts[0] ? parts[0].trim() : targetAcc;
+          delPass = parts.slice(1).join(separator).trim() || 'No Password';
+          isAutoDelivered = true;
+        }
+
+        // Order ထည့်သွင်းခြင်း
+        await supabaseClient.from('orders').insert([{
+          user_id: currentUser.id,
+          product_title: title,
+          price: price,
+          status: isAutoDelivered ? 'completed' : 'pending',
+          admin_note: userProfile.username,
+          delivered_username: delUser,
+          delivered_password: delPass,
+          completed_at: isAutoDelivered ? new Date().toISOString() : null
+        }]);
+
+        // လက်ကျန်ငွေ နှုတ်ယူခြင်း
+        await supabaseClient.from('profiles').update({
+          wallet_balance: userProfile.wallet_balance - price
+        }).eq('id', currentUser.id);
+
+        // Product Stock နှင့် N/P စာရင်း Update လုပ်ခြင်း
+        const newStock = Math.max(0, prod.stock_count - 1);
+        await supabaseClient.from('products').update({
+          stock_count: newStock,
+          accounts_data: rawAccounts.join('\n')
+        }).eq('id', id);
+
+        if (isAutoDelivered) {
+          alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! အကောင့်အချက်အလက်ကို Inbox ထဲသို့ တိုက်ရိုက် ပို့ဆောင်ပေးထားပါသည်။');
+        } else {
+          alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! Admin မှ စစ်ဆေးပြီး Inbox ထဲသို့ အကောင့် ပို့ပေးပါမည်။');
+        }
+
         location.href = 'inbox.html';
-      } catch (err) { alert(err.message); }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
     }
 
     initShop();
