@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <!-- Rounded Pill Navigation -->
+    <!-- Navigation Tabs -->
     <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
       <button onclick="switchTab('users')" id="tabBtn-users" class="nav-btn active flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -143,7 +143,7 @@
 
   </div>
 
-  <!-- Modal for Product -->
+  <!-- Add/Edit Product Modal with Auto N/P Area -->
   <div id="productModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-slate-900 border border-slate-700 p-5 rounded-2xl max-w-md w-full space-y-3">
       <h3 id="modalTitle" class="text-sm font-bold text-white">Add Blox Fruit Product</h3>
@@ -163,20 +163,32 @@
         <label class="block text-[11px] text-slate-400 mb-1">Title</label>
         <input type="text" id="prodTitle" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white" placeholder="Max Level + Shark V4">
       </div>
+      
       <div>
         <label class="block text-[11px] text-slate-400 mb-1">Description</label>
-        <textarea id="prodDesc" rows="3" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white"></textarea>
+        <textarea id="prodDesc" rows="2" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white"></textarea>
       </div>
+
+      <!-- Auto N/P Input Box -->
+      <div>
+        <label class="block text-[11px] text-amber-400 font-bold mb-1">
+          🔑 Auto N/P List (စာကြောင်းတစ်ကြောင်းလျှင် အကောင့်တစ်ခု: user:pass)
+        </label>
+        <textarea id="prodAccountsData" rows="4" placeholder="user1:pass1&#10;user2:pass2" class="w-full bg-slate-950 border border-slate-700 p-2 rounded-xl text-xs text-amber-300 font-mono"></textarea>
+        <p class="text-[10px] text-slate-400 mt-0.5">* N/P ထည့်ပါက Stock ကို စာကြောင်းအရေအတွက်အတိုင်း Auto တွက်ပေးပါမည်။</p>
+      </div>
+
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="block text-[11px] text-slate-400 mb-1">Price (MMK)</label>
           <input type="number" id="prodPrice" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white">
         </div>
         <div>
-          <label class="block text-[11px] text-slate-400 mb-1">Stock</label>
+          <label class="block text-[11px] text-slate-400 mb-1">Stock (Manual ဖြစ်လျှင်သာ)</label>
           <input type="number" id="prodStock" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white" value="1">
         </div>
       </div>
+
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeProductModal()" class="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg">Cancel</button>
         <button onclick="saveProduct()" class="bg-cyan-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg">Save</button>
@@ -431,7 +443,7 @@
       loadOrdersAndAnalytics();
     }
 
-    // 4. Products CRUD
+    // 4. Products CRUD & Auto N/P Logic
     async function loadProducts() {
       const { data: products } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('productsTableBody');
@@ -459,6 +471,7 @@
       document.getElementById('prodDesc').value = '';
       document.getElementById('prodPrice').value = '';
       document.getElementById('prodStock').value = '1';
+      document.getElementById('prodAccountsData').value = '';
       document.getElementById('modalTitle').textContent = 'Add Blox Fruit Product';
       document.getElementById('productModal').classList.remove('hidden');
     }
@@ -470,6 +483,7 @@
       document.getElementById('prodDesc').value = p.description || '';
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodStock').value = p.stock_count;
+      document.getElementById('prodAccountsData').value = p.accounts_data || '';
       document.getElementById('modalTitle').textContent = 'Edit Blox Fruit Product';
       document.getElementById('productModal').classList.remove('hidden');
     }
@@ -484,9 +498,16 @@
       const title = document.getElementById('prodTitle').value.trim();
       const description = document.getElementById('prodDesc').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value);
-      const stock_count = parseInt(document.getElementById('prodStock').value);
+      const accounts_data = document.getElementById('prodAccountsData').value.trim();
 
-      const payload = { category, title, description, price, stock_count };
+      // N/P စာရင်းရှိလျှင် Stock ကို စာကြောင်းအရေအတွက်အတိုင်း Auto သတ်မှတ်ခြင်း
+      let stock_count = parseInt(document.getElementById('prodStock').value) || 0;
+      if (accounts_data) {
+        const lines = accounts_data.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        stock_count = lines.length;
+      }
+
+      const payload = { category, title, description, price, stock_count, accounts_data };
       if (id) {
         await supabaseClient.from('products').update(payload).eq('id', id);
       } else {
@@ -507,4 +528,4 @@
     initAdmin();
   </script>
 </body>
-</html>
+  </html>
