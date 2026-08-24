@@ -68,7 +68,7 @@
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
       <button onclick="filterCategory('All')" id="btn-All" class="cat-btn bg-amber-500 text-slate-950 px-4 py-1.5 rounded-full text-xs font-black whitespace-nowrap shadow-md">All Accounts</button>
       <button onclick="filterCategory('V4 Account')" id="btn-V4 Account" class="cat-btn bg-slate-800/90 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-slate-700">⚡ V4 Account</button>
-      <button onclick="filterCategory('Kit Eat Account')" id="btn-Kit Eat Account" class="cat-btn bg-slate-800/90 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-slate-700">🦊 Kit Eat Account</button>
+      <button onclick="filterCategory('Kit Eat Account')" id="btn-Kit Eat Account" class="cat-btn bg-slate-800/90 text-slate-400 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-slate-700">🦊 Kit Eat Account</button>
       <button onclick="filterCategory('Random Level accounts')" id="btn-Random Level accounts" class="cat-btn bg-slate-800/90 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-slate-700">🎲 Random Level</button>
       <button onclick="filterCategory('God Fruit Inventory')" id="btn-God Fruit Inventory" class="cat-btn bg-slate-800/90 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-slate-700">👑 God Fruit Inv</button>
     </div>
@@ -183,6 +183,7 @@
     }
     function closeTopupModal() { document.getElementById('topupModal').classList.add('hidden'); }
 
+    // Top-up Submit (With Telegram Buttons)
     document.getElementById('topupFormUser').addEventListener('submit', async (e) => {
       e.preventDefault();
       const method = document.getElementById('userPaymentMethod').value;
@@ -216,15 +217,42 @@
         const compressedBase64 = await compressImage(file);
         const buyer = userProfile?.username || currentUser.email;
 
-        await supabaseClient.from('topup_requests').insert([{
-          user_id: currentUser.id, username: buyer, payment_method: method, account_name: accName, amount: amount, slip_url: compressedBase64, status: 'pending'
-        }]);
+        // ၁။ Supabase ထဲ Record ထည့်သွင်းပြီး Request ID ရယူခြင်း
+        const { data: insertedData, error: dbError } = await supabaseClient.from('topup_requests').insert([{
+          user_id: currentUser.id,
+          username: buyer,
+          payment_method: method,
+          account_name: accName,
+          amount: amount,
+          slip_url: compressedBase64,
+          status: 'pending'
+        }]).select();
+
+        if (dbError) throw dbError;
+
+        const reqId = insertedData[0].id;
+
+        // ၂။ Telegram Bot Inline Buttons (Approve & Reject)
+        const inlineKeyboard = {
+          inline_keyboard: [
+            [
+              { text: "✅ Confirm (Approve)", callback_data: `approve_${reqId}` },
+              { text: "❌ Reject", callback_data: `reject_${reqId}` }
+            ]
+          ]
+        };
 
         const formData = new FormData();
         formData.append('chat_id', TELEGRAM_OWNER_ID);
         formData.append('photo', file);
-        formData.append('caption', `🔔 *Top-up Request*\n\n👤 User: ${buyer}\n💳 Method: ${method}\n📝 Sender: ${accName}\n💰 Amount: ${amount.toLocaleString()} Ks`);
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData }).catch(e => console.log(e));
+        formData.append('caption', `🔔 *Top-up Request (Website)*\n\n👤 User: ${buyer}\n💳 Method: ${method}\n📝 Sender: ${accName}\n💰 Amount: ${amount.toLocaleString()} Ks`);
+        formData.append('parse_mode', 'Markdown');
+        formData.append('reply_markup', JSON.stringify(inlineKeyboard));
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+          method: 'POST',
+          body: formData
+        }).catch(e => console.log(e));
 
         alert('🎉 ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်ပါသည်!');
         closeTopupModal();
@@ -318,7 +346,6 @@
       if (!confirm(`"${title}" ကို ${price.toLocaleString()} Ks ဖြင့် ဝယ်ယူမှာ သေချာပါသလား?`)) return;
 
       try {
-        // နောက်ဆုံး Product အချက်အလက်နှင့် N/P စာရင်းကို စစ်ဆေးခြင်း
         const { data: prod, error: pErr } = await supabaseClient.from('products').select('*').eq('id', id).single();
         if (pErr || !prod || prod.stock_count <= 0) {
           alert('ပစ္စည်းပြတ်သွားပါပြီ!');
@@ -330,7 +357,6 @@
         let delUser = null;
         let delPass = null;
 
-        // Auto N/P ရှိပါက ထိပ်ဆုံးတစ်ခု ထုတ်ယူပြီး ဖျက်ပစ်ခြင်း
         if (rawAccounts.length > 0) {
           const targetAcc = rawAccounts.shift();
           const separator = targetAcc.includes(':') ? ':' : (targetAcc.includes('|') ? '|' : ' ');
@@ -341,7 +367,6 @@
           isAutoDelivered = true;
         }
 
-        // Order ထည့်သွင်းခြင်း
         await supabaseClient.from('orders').insert([{
           user_id: currentUser.id,
           product_title: title,
@@ -353,12 +378,10 @@
           completed_at: isAutoDelivered ? new Date().toISOString() : null
         }]);
 
-        // လက်ကျန်ငွေ နှုတ်ယူခြင်း
         await supabaseClient.from('profiles').update({
           wallet_balance: userProfile.wallet_balance - price
         }).eq('id', currentUser.id);
 
-        // Product Stock နှင့် N/P စာရင်း Update လုပ်ခြင်း
         const newStock = Math.max(0, prod.stock_count - 1);
         await supabaseClient.from('products').update({
           stock_count: newStock,
@@ -380,4 +403,4 @@
     initShop();
   </script>
 </body>
-</html>
+  </html>
