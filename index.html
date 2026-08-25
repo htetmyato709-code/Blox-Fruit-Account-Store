@@ -6,6 +6,8 @@
   <title>Blox Fruit Shop</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SweetAlert2 Dark & Gold Glow Custom UI -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body { background-color: #0b0f19; }
     .gold-btn {
@@ -33,6 +35,42 @@
       background: #131d35;
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Custom SweetAlert2 Gold Styling */
+    .swal2-popup.custom-gold-popup {
+      background: #0f172a !important;
+      border: 1.5px solid #f59e0b !important;
+      border-radius: 1.25rem !important;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.25) !important;
+      color: #f8fafc !important;
+      font-family: inherit !important;
+    }
+    .swal2-title.custom-gold-title {
+      color: #fbbf24 !important;
+      font-weight: 800 !important;
+      font-size: 1.15rem !important;
+    }
+    .swal2-html-container.custom-gold-content {
+      color: #cbd5e1 !important;
+      font-size: 0.85rem !important;
+      line-height: 1.5 !important;
+    }
+    .swal2-confirm.custom-gold-confirm {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #0b0f19 !important;
+      font-weight: 800 !important;
+      border-radius: 0.75rem !important;
+      padding: 0.6rem 1.5rem !important;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+    }
+    .swal2-cancel.custom-gold-cancel {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      font-weight: 700 !important;
+      border-radius: 0.75rem !important;
+      border: 1px solid #334155 !important;
+      padding: 0.6rem 1.2rem !important;
+    }
   </style>
 </head>
 <body class="text-slate-200 min-h-screen flex flex-col">
@@ -81,7 +119,7 @@
 
   <!-- Top-up Modal -->
   <div id="topupModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-    <div class="bg-[#0f172a] border border-amber-500/30 p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
+    <div class="bg-[#0f172a] border border-amber-500/40 p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
         <h3 class="font-black text-amber-400 text-sm flex items-center gap-1.5"><span>💳</span> ငွေဖြည့်သွင်းရန် (Deposit)</h3>
         <button onclick="closeTopupModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
@@ -124,7 +162,7 @@
           <label class="block text-slate-400 mb-1">Screenshot (Slip)</label>
           <input type="file" id="userSlipFile" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 p-1.5 rounded-xl text-slate-300">
         </div>
-        <button type="submit" id="submitTopupBtn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl shadow-lg active:scale-95 transition">🚀 Submit Request</button>
+        <button type="submit" id="submitTopupBtn" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-black py-2.5 rounded-xl shadow-lg active:scale-95 transition">🚀 Submit Request</button>
       </form>
     </div>
   </div>
@@ -140,6 +178,41 @@
     let userProfile = null;
     let allProducts = [];
     let currentCategory = 'All';
+
+    // SweetAlert2 Custom Notification Helpers
+    const showGoldAlert = (title, text, icon = 'success') => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: icon,
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm'
+        },
+        buttonsStyling: false
+      });
+    };
+
+    const showGoldConfirm = (title, text, confirmText = 'ဝယ်ယူမည်') => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'မဝယ်ယူပါ',
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm',
+          cancelButton: 'custom-gold-cancel'
+        },
+        buttonsStyling: false
+      });
+    };
 
     async function initShop() {
       try {
@@ -178,12 +251,20 @@
     }
 
     function openTopupModal() {
-      if (!currentUser) { alert('Login ဝင်ပေးပါ'); location.href = 'login.html'; return; }
+      if (!currentUser) {
+        showGoldAlert('သတိပေးချက်', 'ငွေဖြည့်ရန် အရင်ဆုံး Login ဝင်ပေးပါ', 'warning').then(() => {
+          location.href = 'login.html';
+        });
+        return;
+      }
       document.getElementById('topupModal').classList.remove('hidden');
     }
-    function closeTopupModal() { document.getElementById('topupModal').classList.add('hidden'); }
 
-    // Top-up Submit (With Telegram Buttons)
+    function closeTopupModal() {
+      document.getElementById('topupModal').classList.add('hidden');
+    }
+
+    // Top-up Request with SweetAlert2
     document.getElementById('topupFormUser').addEventListener('submit', async (e) => {
       e.preventDefault();
       const method = document.getElementById('userPaymentMethod').value;
@@ -192,7 +273,8 @@
       const file = document.getElementById('userSlipFile').files[0];
       const btn = document.getElementById('submitTopupBtn');
 
-      btn.disabled = true; btn.textContent = 'Sending...';
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
 
       const compressImage = (imageFile) => new Promise((resolve) => {
         const reader = new FileReader();
@@ -217,7 +299,6 @@
         const compressedBase64 = await compressImage(file);
         const buyer = userProfile?.username || currentUser.email;
 
-        // ၁။ Supabase ထဲ Record ထည့်သွင်းပြီး Request ID ရယူခြင်း
         const { data: insertedData, error: dbError } = await supabaseClient.from('topup_requests').insert([{
           user_id: currentUser.id,
           username: buyer,
@@ -231,8 +312,6 @@
         if (dbError) throw dbError;
 
         const reqId = insertedData[0].id;
-
-        // ၂။ Telegram Bot Inline Buttons (Approve & Reject)
         const inlineKeyboard = {
           inline_keyboard: [
             [
@@ -254,17 +333,24 @@
           body: formData
         }).catch(e => console.log(e));
 
-        alert('🎉 ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်ပါသည်!');
         closeTopupModal();
         document.getElementById('topupFormUser').reset();
-      } catch (err) { alert(err.message); }
-      finally { btn.disabled = false; btn.textContent = '🚀 Submit Request'; }
+        await showGoldAlert('ငွေဖြည့်တောင်းဆိုမှု အောင်မြင်သည်', `ငွေပမာဏ: <b class="text-amber-400">${amount.toLocaleString()} Ks</b><br>Admin မှ စစ်ဆေးပြီး မကြာမီ ငွေဖြည့်ပေးပါမည်။`, 'success');
+      } catch (err) {
+        showGoldAlert('Error', err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Submit Request';
+      }
     });
 
     async function loadProducts() {
       const grid = document.getElementById('productsGrid');
       const { data: products } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-      if (!products || products.length === 0) { grid.innerHTML = '<p class="p-6 text-slate-500 text-xs text-center bg-[#0f172a]">ရောင်းရန် Account မရှိသေးပါ</p>'; return; }
+      if (!products || products.length === 0) {
+        grid.innerHTML = '<p class="p-6 text-slate-500 text-xs text-center bg-[#0f172a]">ရောင်းရန် Account မရှိသေးပါ</p>';
+        return;
+      }
       allProducts = products;
       renderProducts();
     }
@@ -283,7 +369,10 @@
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
       const filtered = currentCategory === 'All' ? allProducts : allProducts.filter(p => p.category === currentCategory);
-      if (filtered.length === 0) { grid.innerHTML = '<p class="p-6 text-slate-500 text-xs text-center bg-[#0f172a]">အကောင့်မရှိသေးပါ</p>'; return; }
+      if (filtered.length === 0) {
+        grid.innerHTML = '<p class="p-6 text-slate-500 text-xs text-center bg-[#0f172a]">အကောင့်မရှိသေးပါ</p>';
+        return;
+      }
 
       filtered.forEach(p => {
         const hasStock = p.stock_count > 0;
@@ -339,16 +428,35 @@
       }
     }
 
-    // Auto N/P Sending System
+    // Buy Product with Dark & Gold Confirm Popup
     async function buyProduct(id, title, price) {
-      if (!currentUser) { alert('Login ဝင်ပါ'); location.href = 'login.html'; return; }
-      if ((userProfile.wallet_balance || 0) < price) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ! ငွေဖြည့်ပေးပါ။'); return; }
-      if (!confirm(`"${title}" ကို ${price.toLocaleString()} Ks ဖြင့် ဝယ်ယူမှာ သေချာပါသလား?`)) return;
+      if (!currentUser) {
+        showGoldAlert('သတိပေးချက်', 'အကောင့်ဝယ်ယူရန် Login အရင်ဝင်ပါ', 'warning').then(() => {
+          location.href = 'login.html';
+        });
+        return;
+      }
+      if ((userProfile.wallet_balance || 0) < price) {
+        showGoldAlert(
+          'လက်ကျန်ငွေ မလုံလောက်ပါ',
+          `ဝယ်ယူရန် လိုအပ်ငွေ: <b class="text-amber-400">${price.toLocaleString()} Ks</b><br>သင့်လက်ကျန်ငွေ: <b class="text-rose-400">${(userProfile.wallet_balance || 0).toLocaleString()} Ks</b><br><br>ကျေးဇူးပြု၍ ငွေဖြည့်ပေးပါ။`,
+          'error'
+        );
+        return;
+      }
+
+      // Gold Glow Confirm Box
+      const confirmResult = await showGoldConfirm(
+        'ဝယ်ယူမှု အတည်ပြုရန်',
+        `<b class="text-amber-300">"${title}"</b><br>ကျသင့်ငွေ: <b class="text-emerald-400">${price.toLocaleString()} Ks</b> ကို ဝယ်ယူမှာ သေချာပါသလား?`
+      );
+
+      if (!confirmResult.isConfirmed) return;
 
       try {
         const { data: prod, error: pErr } = await supabaseClient.from('products').select('*').eq('id', id).single();
         if (pErr || !prod || prod.stock_count <= 0) {
-          alert('ပစ္စည်းပြတ်သွားပါပြီ!');
+          showGoldAlert('ပစ္စည်းပြတ်သွားပါပြီ', 'ဤ Account သည် ပစ္စည်းကုန်သွားပါပြီ။', 'error');
           return;
         }
 
@@ -389,14 +497,14 @@
         }).eq('id', id);
 
         if (isAutoDelivered) {
-          alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! အကောင့်အချက်အလက်ကို Inbox ထဲသို့ တိုက်ရိုက် ပို့ဆောင်ပေးထားပါသည်။');
+          await showGoldAlert('ဝယ်ယူမှု အောင်မြင်သည်', '🎉 အကောင့်အချက်အလက်များကို Inbox ထဲသို့ တိုက်ရိုက် ပို့ဆောင်ပေးထားပါပြီ။', 'success');
         } else {
-          alert('🎉 ဝယ်ယူမှု အောင်မြင်ပါသည်! Admin မှ စစ်ဆေးပြီး Inbox ထဲသို့ အကောင့် ပို့ပေးပါမည်။');
+          await showGoldAlert('ဝယ်ယူမှု အောင်မြင်သည်', '🎉 Admin မှ စစ်ဆေးပြီး Inbox ထဲသို့ အကောင့် ပို့ပေးပါမည်။', 'success');
         }
 
         location.href = 'inbox.html';
       } catch (err) {
-        alert('Error: ' + err.message);
+        showGoldAlert('Error', err.message, 'error');
       }
     }
 
