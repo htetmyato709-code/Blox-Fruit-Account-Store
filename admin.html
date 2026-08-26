@@ -6,6 +6,8 @@
   <title>StarGrow Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SweetAlert2 Dark & Gold Glow -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body { background-color: #0b0f19; font-family: sans-serif; }
     .nav-btn { transition: all 0.2s ease-in-out; }
@@ -18,6 +20,47 @@
     .nav-btn:not(.active) { background-color: #1e293b; color: #94a3b8; }
     .nav-btn:not(.active):hover { background-color: #334155; color: #f8fafc; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Custom SweetAlert2 Gold Styling */
+    .swal2-popup.custom-gold-popup {
+      background: #0f172a !important;
+      border: 1.5px solid #f59e0b !important;
+      border-radius: 1.25rem !important;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.25) !important;
+      color: #f8fafc !important;
+    }
+    .swal2-title.custom-gold-title {
+      color: #fbbf24 !important;
+      font-weight: 800 !important;
+      font-size: 1.15rem !important;
+    }
+    .swal2-html-container.custom-gold-content {
+      color: #cbd5e1 !important;
+      font-size: 0.85rem !important;
+    }
+    .swal2-confirm.custom-gold-confirm {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #0b0f19 !important;
+      font-weight: 800 !important;
+      border-radius: 0.75rem !important;
+      padding: 0.6rem 1.4rem !important;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+    }
+    .swal2-cancel.custom-gold-cancel {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      font-weight: 700 !important;
+      border-radius: 0.75rem !important;
+      border: 1px solid #334155 !important;
+      padding: 0.6rem 1.2rem !important;
+    }
+    .swal2-input {
+      background: #020617 !important;
+      border: 1px solid #334155 !important;
+      color: #f8fafc !important;
+      border-radius: 0.75rem !important;
+      font-size: 0.85rem !important;
+    }
   </style>
 </head>
 <body class="text-slate-200 min-h-screen p-3 md:p-6">
@@ -103,15 +146,17 @@
         </div>
       </div>
 
+      <!-- Pending Deliver Orders -->
       <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
         <h3 class="text-sm font-bold text-amber-400">⏳ ပို့ဆောင်ရန် စောင့်ဆိုင်းနေသော Orders (Pending)</h3>
-        <div id="pendingOrdersList" class="space-y-2">
+        <div id="pendingOrdersList" class="space-y-3">
           <p class="text-slate-500 text-xs">ဆွဲယူနေပါသည်...</p>
         </div>
       </div>
 
+      <!-- Completed Orders -->
       <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-        <h3 class="text-sm font-bold text-slate-400">✅ ပို့ဆောင်ပြီးစီးခဲ့သော Orders စာရင်း (Completed)</h3>
+        <h3 class="text-sm font-bold text-slate-400">✅ ပို့ဆောင်ပြီးစီးခဲ့သော Orders စာရင်း (Completed / Cancelled)</h3>
         <div id="completedOrdersList" class="space-y-1.5 max-h-80 overflow-y-auto pr-1">
           <p class="text-slate-500 text-xs">ဆွဲယူနေပါသည်...</p>
         </div>
@@ -143,7 +188,7 @@
 
   </div>
 
-  <!-- Add/Edit Product Modal with Auto N/P Area -->
+  <!-- Product Modal -->
   <div id="productModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-slate-900 border border-slate-700 p-5 rounded-2xl max-w-md w-full space-y-3">
       <h3 id="modalTitle" class="text-sm font-bold text-white">Add Blox Fruit Product</h3>
@@ -169,7 +214,6 @@
         <textarea id="prodDesc" rows="2" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-xl text-xs text-white"></textarea>
       </div>
 
-      <!-- Auto N/P Input Box -->
       <div>
         <label class="block text-[11px] text-amber-400 font-bold mb-1">
           🔑 Auto N/P List (စာကြောင်းတစ်ကြောင်းလျှင် အကောင့်တစ်ခု: user:pass)
@@ -194,11 +238,45 @@
         <button onclick="saveProduct()" class="bg-cyan-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg">Save</button>
       </div>
     </div>
-  </div>
-    <script>
+  <script>
     const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // SweetAlert2 Custom Notification Helpers
+    const showAdminAlert = (title, text, icon = 'success') => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: icon,
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm'
+        },
+        buttonsStyling: false
+      });
+    };
+
+    const showAdminConfirm = (title, text, confirmText = 'လုပ်ဆောင်မည်') => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'မလုပ်ပါ',
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm',
+          cancelButton: 'custom-gold-cancel'
+        },
+        buttonsStyling: false
+      });
+    };
 
     async function initAdmin() {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -281,12 +359,17 @@
     }
 
     async function toggleBanUser(userId, currentBannedStatus) {
-      const actionText = currentBannedStatus ? 'Unban လုပ်' : 'Ban (ပိတ်ပင်)';
-      if (!confirm(`ဤ User ကို ${actionText} မှာ သေချာပါသလား?`)) return;
+      const actionText = currentBannedStatus ? 'Unban ပြုလုပ်' : 'Ban (Block ပြုလုပ်)';
+      const confirm = await showAdminConfirm('သေချာပါသလား?', `ဤ User ကို <b>${actionText}</b> မှာ သေချာပါသလား?`);
+      if (!confirm.isConfirmed) return;
 
       const { error } = await supabaseClient.from('profiles').update({ is_banned: !currentBannedStatus }).eq('id', userId);
-      if (error) { alert('Error: ' + error.message); }
-      else { alert(`User ကို အောင်မြင်စွာ ${actionText} ပြီးပါပြီ!`); loadUsers(); }
+      if (error) {
+        showAdminAlert('Error', error.message, 'error');
+      } else {
+        await showAdminAlert('အောင်မြင်သည်', `User ကို အောင်မြင်စွာ ${actionText} ပြီးပါပြီ!`, 'success');
+        loadUsers();
+      }
     }
 
     // 2. Top-up Requests & Manual Topup
@@ -310,8 +393,8 @@
             ${req.slip_url ? `<a href="${req.slip_url}" target="_blank" class="text-cyan-400 underline text-[11px]">📸 ပြေစာ Screenshot ကြည့်ရန်</a>` : ''}
           </div>
           <div class="flex gap-2">
-            <button onclick="approveTopup('${req.id}', '${req.user_id}', ${req.amount}, '${req.username}')" class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Approve</button>
-            <button onclick="rejectTopup('${req.id}')" class="bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Reject</button>
+            <button onclick="approveTopup('${req.id}', '${req.user_id}', ${req.amount}, '${req.username}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Approve</button>
+            <button onclick="rejectTopup('${req.id}')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Reject</button>
           </div>
         `;
         container.appendChild(div);
@@ -319,7 +402,9 @@
     }
 
     async function approveTopup(reqId, userId, amount, username) {
-      if (!confirm(`${username} ထံသို့ ${amount} MMK ငွေဖြည့်ပေးမှာ သေချာပါသလား?`)) return;
+      const confirm = await showAdminConfirm('ငွေဖြည့်အတည်ပြုခြင်း', `<b>${username}</b> ထံသို့ <b class="text-amber-400">${amount.toLocaleString()} MMK</b> ဖြည့်သွင်းပေးမှာ သေချာပါသလား?`);
+      if (!confirm.isConfirmed) return;
+
       try {
         const { data: user } = await supabaseClient.from('profiles').select('wallet_balance').eq('id', userId).single();
         const newBal = (Number(user?.wallet_balance) || 0) + Number(amount);
@@ -327,15 +412,18 @@
         await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', userId);
         await supabaseClient.from('topup_requests').update({ status: 'approved' }).eq('id', reqId);
 
-        alert(`✅ ${username} ထံ ${amount} MMK ဖြည့်သွင်းပြီးပါပြီ!`);
+        await showAdminAlert('အောင်မြင်သည်', `✅ ${username} ထံ <b class="text-amber-400">${amount.toLocaleString()} MMK</b> ဖြည့်သွင်းပြီးပါပြီ!`, 'success');
         loadTopupRequests();
         loadUsers();
-      } catch (err) { alert(err.message); }
+      } catch (err) { showAdminAlert('Error', err.message, 'error'); }
     }
 
     async function rejectTopup(reqId) {
-      if (!confirm('Reject လုပ်မှာ သေချာပါသလား?')) return;
+      const confirm = await showAdminConfirm('ပယ်ဖျက်ရန် သေချာပါသလား?', 'ဤငွေဖြည့်တောင်းဆိုမှုကို Reject လုပ်မှာ သေချာပါသလား?');
+      if (!confirm.isConfirmed) return;
+
       await supabaseClient.from('topup_requests').update({ status: 'rejected' }).eq('id', reqId);
+      await showAdminAlert('Reject ပြီးပါပြီ', 'ငွေဖြည့်တောင်းဆိုမှုကို ပယ်ဖျက်လိုက်ပါပြီ။', 'info');
       loadTopupRequests();
     }
 
@@ -348,19 +436,23 @@
       btn.disabled = true;
       try {
         const { data: users } = await supabaseClient.from('profiles').select('*').or(`username.ilike.${input},email.ilike.${input}`);
-        if (!users || users.length === 0) { alert('User ရှာမတွေ့ပါ!'); return; }
+        if (!users || users.length === 0) {
+          showAdminAlert('မတွေ့ပါ', 'ဤ Username / Email ဖြင့် User ရှာမတွေ့ပါ!', 'warning');
+          return;
+        }
 
         const target = users[0];
         const newBal = (Number(target.wallet_balance) || 0) + amount;
         await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', target.id);
-        alert(`အောင်မြင်ပါသည်! ${target.username} ထံ ${amount} MMK ဖြည့်သွင်းပြီးပါပြီ။`);
+        
+        await showAdminAlert('ငွေဖြည့်သွင်းမှု အောင်မြင်သည်', `<b>${target.username}</b> ထံသို့ <b class="text-amber-400">${amount.toLocaleString()} MMK</b> ဖြည့်သွင်းပြီးပါပြီ။`, 'success');
         document.getElementById('manualTopupForm').reset();
         loadUsers();
-      } catch (err) { alert(err.message); }
+      } catch (err) { showAdminAlert('Error', err.message, 'error'); }
       finally { btn.disabled = false; }
     });
-
-    // 3. Orders & Analytics
+          </div>
+        // 3. Orders & Analytics (Auto Delivery, Cancel without Refund & Cancel with Refund)
     async function loadOrdersAndAnalytics() {
       const { data: allOrders } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
 
@@ -391,24 +483,35 @@
       } else {
         pendings.forEach(o => {
           const div = document.createElement('div');
-          div.className = "bg-slate-800 p-3 rounded-xl flex justify-between items-center flex-wrap gap-2 text-xs";
+          div.className = "bg-slate-800 p-3.5 rounded-xl flex justify-between items-center flex-wrap gap-2 text-xs border border-slate-700/60";
           div.innerHTML = `
             <div>
-              <p class="font-bold text-white">${o.product_title} (${o.price} MMK)</p>
-              <p class="text-[11px] text-blue-400">Buyer: <b>${o.admin_note || 'User'}</b></p>
+              <p class="font-bold text-white text-sm">${o.product_title} <span class="text-amber-400 font-mono">(${Number(o.price).toLocaleString()} Ks)</span></p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Buyer: <b class="text-blue-400">${o.admin_note || 'User'}</b></p>
             </div>
-            <button onclick="deliverOrder('${o.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs">Account ပို့မည်</button>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="deliverOrderModal('${o.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 rounded-lg text-xs shadow-md">
+                🚀 Account ပို့မည်
+              </button>
+              <button onclick="cancelOrderNoRefund('${o.id}')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-slate-600">
+                🚫 Cancel
+              </button>
+              <button onclick="cancelOrderWithRefund('${o.id}', '${o.user_id}', ${o.price}, '${o.admin_note || 'User'}')" class="bg-rose-600/80 hover:bg-rose-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs">
+                💸 Cancel & Refund
+              </button>
+            </div>
           `;
           pendingContainer.appendChild(div);
         });
       }
 
-      const completeds = allOrders.filter(o => o.status === 'completed');
+      const completeds = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled');
       completedContainer.innerHTML = '';
       if (completeds.length === 0) {
         completedContainer.innerHTML = '<p class="text-slate-500 text-xs">ပြီးစီးခဲ့သော Order မရှိသေးပါ</p>';
       } else {
         completeds.forEach(o => {
+          const isCancelled = o.status === 'cancelled';
           const div = document.createElement('div');
           div.className = "bg-slate-950/60 border border-slate-800/80 px-3 py-2 rounded-xl flex justify-between items-center text-[11px]";
           div.innerHTML = `
@@ -417,8 +520,10 @@
               <span class="text-slate-500">(${o.admin_note || 'User'})</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="font-mono text-emerald-400 font-bold">${o.price} Ks</span>
-              <span class="text-[10px] bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded">Sent</span>
+              <span class="font-mono text-emerald-400 font-bold">${Number(o.price).toLocaleString()} Ks</span>
+              <span class="text-[10px] ${isCancelled ? 'bg-rose-950 text-rose-400 border border-rose-800' : 'bg-emerald-950 text-emerald-400'} px-1.5 py-0.5 rounded">
+                ${isCancelled ? 'Cancelled' : 'Sent'}
+              </span>
             </div>
           `;
           completedContainer.appendChild(div);
@@ -426,21 +531,82 @@
       }
     }
 
-    async function deliverOrder(orderId) {
-      const u = prompt("Roblox Username ထည့်ပါ:");
-      if (!u) return;
-      const p = prompt("Roblox Password ထည့်ပါ:");
-      if (!p) return;
+    // Account Deliver Prompt Modal
+    async function deliverOrderModal(orderId) {
+      const { value: formValues } = await Swal.fire({
+        title: '🔑 Roblox Account ပို့ဆောင်ရန်',
+        html:
+          '<input id="swal-input-user" class="swal2-input" placeholder="Roblox Username">' +
+          '<input id="swal-input-pass" class="swal2-input" placeholder="Roblox Password">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: '🚀 ပို့ဆောင်မည်',
+        cancelButtonText: 'မပို့ပါ',
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          confirmButton: 'custom-gold-confirm',
+          cancelButton: 'custom-gold-cancel'
+        },
+        buttonsStyling: false,
+        preConfirm: () => {
+          const u = document.getElementById('swal-input-user').value.trim();
+          const p = document.getElementById('swal-input-pass').value.trim();
+          if (!u || !p) {
+            Swal.showValidationMessage('Username နှင့် Password နှစ်ခုလုံး ဖြည့်ပေးပါ!');
+            return false;
+          }
+          return { username: u, password: p };
+        }
+      });
+
+      if (!formValues) return;
 
       await supabaseClient.from('orders').update({
-        delivered_username: u.trim(),
-        delivered_password: p.trim(),
+        delivered_username: formValues.username,
+        delivered_password: formValues.password,
         status: 'completed',
         completed_at: new Date().toISOString()
       }).eq('id', orderId);
 
-      alert("User ထံ Account ပို့ဆောင်ပြီးပါပြီ!");
+      await showAdminAlert('ပို့ဆောင်ပြီးပါပြီ', '🎉 User ၏ Inbox ထဲသို့ Account တန်းရောက်သွားပါပြီ!', 'success');
       loadOrdersAndAnalytics();
+    }
+
+    // Cancel Order (ငွေမအမ်းပါ)
+    async function cancelOrderNoRefund(orderId) {
+      const confirm = await showAdminConfirm('🚫 Order Cancel ပြုလုပ်မည်', 'ဤ Order ကို Cancel လုပ်မှာ သေချာပါသလား? <br><b class="text-rose-400">(ငွေမအမ်းပါ)</b>');
+      if (!confirm.isConfirmed) return;
+
+      await supabaseClient.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
+      await showAdminAlert('Order Cancelled', 'Order ကို ငွေမအမ်းဘဲ Cancel လုပ်လိုက်ပါပြီ။', 'info');
+      loadOrdersAndAnalytics();
+    }
+
+    // Cancel Order & Refund (ငွေပြန်အမ်းမည်)
+    async function cancelOrderWithRefund(orderId, userId, amount, userName) {
+      const confirm = await showAdminConfirm(
+        '💸 Cancel & Refund ပြုလုပ်မည်',
+        `ဤ Order ကို Cancel လုပ်ပြီး User (<b>${userName}</b>) ထံသို့ <b class="text-emerald-400">${amount.toLocaleString()} Ks</b> အပြည့် ပြန်အမ်းပေးမှာ သေချာပါသလား?`
+      );
+      if (!confirm.isConfirmed) return;
+
+      try {
+        const { data: user } = await supabaseClient.from('profiles').select('wallet_balance').eq('id', userId).single();
+        const newBal = (Number(user?.wallet_balance) || 0) + Number(amount);
+        await supabaseClient.from('profiles').update({ wallet_balance: newBal }).eq('id', userId);
+        await supabaseClient.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
+
+        await showAdminAlert(
+          'Refund အောင်မြင်သည်',
+          `Order ကို Cancel လုပ်ပြီး <b>${userName}</b> ထံ <b class="text-emerald-400">${amount.toLocaleString()} Ks</b> ပြန်အမ်းပေးလိုက်ပါပြီ။`,
+          'success'
+        );
+        loadOrdersAndAnalytics();
+        loadUsers();
+      } catch (err) {
+        showAdminAlert('Error', err.message, 'error');
+      }
     }
 
     // 4. Products CRUD & Auto N/P Logic
@@ -500,7 +666,6 @@
       const price = parseFloat(document.getElementById('prodPrice').value);
       const accounts_data = document.getElementById('prodAccountsData').value.trim();
 
-      // N/P စာရင်းရှိလျှင် Stock ကို စာကြောင်းအရေအတွက်အတိုင်း Auto သတ်မှတ်ခြင်း
       let stock_count = parseInt(document.getElementById('prodStock').value) || 0;
       if (accounts_data) {
         const lines = accounts_data.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -516,16 +681,19 @@
 
       closeProductModal();
       loadProducts();
+      showAdminAlert('သိမ်းဆည်းပြီးပါပြီ', 'Blox Fruit Product အချက်အလက်များ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။', 'success');
     }
 
     async function deleteProduct(id) {
-      if (confirm('ဖျက်မှာ သေချာပါသလား?')) {
+      const confirm = await showAdminConfirm('ဖျက်မှာ သေချာပါသလား?', 'ဤ Product ကို ဖျက်ပစ်မှာ သေချာပါသလား?');
+      if (confirm.isConfirmed) {
         await supabaseClient.from('products').delete().eq('id', id);
         loadProducts();
+        showAdminAlert('ဖျက်ပြီးပါပြီ', 'Product ကို ဖျက်လိုက်ပါပြီ။', 'info');
       }
     }
 
     initAdmin();
   </script>
 </body>
-  </html>
+</html>
