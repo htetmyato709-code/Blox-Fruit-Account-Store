@@ -12,6 +12,10 @@
     .gold-glow {
       box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
     }
+    .admin-btn-glow {
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.35);
+      border: 1px solid rgba(244, 63, 94, 0.6);
+    }
     .bottom-nav {
       background: rgba(11, 15, 25, 0.95);
       border-top: 1px solid #1e293b;
@@ -72,7 +76,7 @@
   <!-- Main Profile Content -->
   <main class="max-w-md w-full mx-auto p-4 space-y-4 flex-1">
     
-    <!-- Balance & User Info Card (ထင်ရှားစွာ ပြသထားသော ကတ်) -->
+    <!-- Balance & User Info Card -->
     <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/40 p-5 rounded-2xl gold-glow space-y-3 relative overflow-hidden">
       <div class="flex justify-between items-start">
         <div>
@@ -94,6 +98,20 @@
           <p id="profDisplayEmail" class="font-bold text-slate-300 mt-0.5 truncate max-w-[150px]">Loading...</p>
         </div>
       </div>
+    </div>
+
+    <!-- Admin Dashboard Entry Button (Admin အီးမေးလ်ဖြစ်မှသာ အလိုအလျောက် ပေါ်လာမည့်နေရာ) -->
+    <div id="adminPanelEntry" class="hidden">
+      <a href="admin.html" class="w-full bg-gradient-to-r from-rose-900/60 via-slate-900 to-amber-950/60 p-3.5 rounded-2xl admin-btn-glow flex items-center justify-between transition active:scale-95">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🛠️</span>
+          <div>
+            <h4 class="text-xs font-black text-rose-400 uppercase tracking-wider">Admin Control Panel</h4>
+            <p class="text-[11px] text-slate-300 mt-0.5">အော်ဒါများ၊ အကောင့်များနှင့် ဝဘ်ဆိုဒ် စီမံရန်</p>
+          </div>
+        </div>
+        <span class="text-xs font-bold text-amber-400 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl">ဝင်ရောက်မည် →</span>
+      </a>
     </div>
 
     <!-- Edit Profile Settings Section -->
@@ -224,9 +242,11 @@
       }
 
       currentUser = session.user;
+      const userEmail = currentUser.email.toLowerCase();
+
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
       const balance = profile?.wallet_balance || 0;
-      const displayName = profile?.username || currentUser.email.split('@')[0];
+      const displayName = profile?.username || userEmail.split('@')[0];
       userProfile = { ...profile, username: displayName, wallet_balance: balance };
 
       // UI Update
@@ -235,6 +255,14 @@
       document.getElementById('profDisplayEmail').textContent = currentUser.email;
       document.getElementById('newUsernameInput').value = displayName;
       document.getElementById('newEmailInput').value = currentUser.email;
+
+      // Admin Email (htetmyato709@gmail.com) စစ်ဆေးခြင်း
+      if (userEmail === 'htetmyato709@gmail.com' || profile?.role === 'admin') {
+        const adminBox = document.getElementById('adminPanelEntry');
+        if (adminBox) {
+          adminBox.classList.remove('hidden');
+        }
+      }
     }
 
     // 1. Change Username
@@ -253,7 +281,6 @@
         const { error } = await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentUser.id);
         if (error) throw error;
 
-        // User Metadata Update
         await supabaseClient.auth.updateUser({ data: { username: newName } });
 
         document.getElementById('profDisplayUsername').textContent = newName;
@@ -269,7 +296,7 @@
     document.getElementById('changeEmailForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const newEmail = document.getElementById('newEmailInput').value.trim();
-      if (!newEmail || newEmail === currentUser.email) return;
+      if (!newEmail || newEmail.toLowerCase() === currentUser.email.toLowerCase()) return;
 
       const confirm = await showGoldConfirm('Email ပြောင်းလဲမည်', `Email အသစ် <b>"${newEmail}"</b> သို့ ပြောင်းလဲမှာ သေချာပါသလား? (အတည်ပြု Confirmation Link ရောက်ရှိနိုင်ပါသည်)`);
       if (!confirm.isConfirmed) return;
@@ -330,4 +357,5 @@
     initProfile();
   </script>
 </body>
-</html>
+  </html>
+  
