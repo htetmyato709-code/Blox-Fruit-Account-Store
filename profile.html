@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Blox Fruit Shop - Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body { background-color: #0b0f19; font-family: sans-serif; }
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    .bottom-nav {
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid #1e293b;
+      backdrop-filter: blur(12px);
+    }
+    .nav-item.active { color: #fbbf24; }
+    .nav-item:not(.active) { color: #64748b; }
+
+    /* Custom SweetAlert2 Gold Styling */
+    .swal2-popup.custom-gold-popup {
+      background: #0f172a !important;
+      border: 1.5px solid #f59e0b !important;
+      border-radius: 1.25rem !important;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.25) !important;
+      color: #f8fafc !important;
+    }
+    .swal2-title.custom-gold-title {
+      color: #fbbf24 !important;
+      font-weight: 800 !important;
+      font-size: 1.15rem !important;
+    }
+    .swal2-html-container.custom-gold-content {
+      color: #cbd5e1 !important;
+      font-size: 0.85rem !important;
+    }
+    .swal2-confirm.custom-gold-confirm {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #0b0f19 !important;
+      font-weight: 800 !important;
+      border-radius: 0.75rem !important;
+      padding: 0.6rem 1.4rem !important;
+    }
+    .swal2-cancel.custom-gold-cancel {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      font-weight: 700 !important;
+      border-radius: 0.75rem !important;
+      border: 1px solid #334155 !important;
+      padding: 0.6rem 1.2rem !important;
+    }
+  </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col pb-24">
+
+  <!-- Top Header -->
+  <header class="bg-[#0b0f19]/95 border-b border-slate-800 sticky top-0 z-40 p-3.5 backdrop-blur-md">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <a href="index.html" class="flex items-center gap-2">
+        <span class="text-xl">⚡</span>
+        <span class="font-black text-lg text-amber-400 tracking-wide">StarGrow</span>
+      </a>
+      <button onclick="logoutUser()" class="bg-rose-600/80 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition shadow">
+        Logout 🚪
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Profile Content -->
+  <main class="max-w-md w-full mx-auto p-4 space-y-4 flex-1">
+    
+    <!-- Balance & User Info Card (ထင်ရှားစွာ ပြသထားသော ကတ်) -->
+    <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/40 p-5 rounded-2xl gold-glow space-y-3 relative overflow-hidden">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[10px] font-bold tracking-wider text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Current Balance</span>
+          <h2 id="profBalanceDisplay" class="text-2xl font-black text-amber-400 mt-1">0 Ks</h2>
+        </div>
+        <a href="topup.html" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
+          <span>➕</span> <span>Deposit</span>
+        </a>
+      </div>
+
+      <div class="border-t border-slate-800/80 pt-3 flex justify-between items-center text-xs">
+        <div>
+          <p class="text-slate-400 text-[11px]">User Account</p>
+          <p id="profDisplayUsername" class="font-bold text-white mt-0.5">Loading...</p>
+        </div>
+        <div class="text-right">
+          <p class="text-slate-400 text-[11px]">Email Address</p>
+          <p id="profDisplayEmail" class="font-bold text-slate-300 mt-0.5 truncate max-w-[150px]">Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Settings Section -->
+    <div class="space-y-3">
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Account Settings</h3>
+
+      <!-- 1. Change Username -->
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <h4 class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+          <span>👤</span> Username ပြောင်းလဲရန်
+        </h4>
+        <form id="changeUsernameForm" class="space-y-2">
+          <input type="text" id="newUsernameInput" required placeholder="New Username" class="w-full bg-slate-950 border border-slate-700 p-2.5 rounded-xl text-xs text-white focus:border-amber-400 focus:outline-none">
+          <button type="submit" id="btnUpdateUsername" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs py-2 rounded-xl border border-slate-700 transition">
+            Save Username
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. Change Email -->
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <h4 class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+          <span>✉️</span> Email ပြောင်းလဲရန်
+        </h4>
+        <form id="changeEmailForm" class="space-y-2">
+          <input type="email" id="newEmailInput" required placeholder="New Email Address" class="w-full bg-slate-950 border border-slate-700 p-2.5 rounded-xl text-xs text-white focus:border-blue-400 focus:outline-none">
+          <button type="submit" id="btnUpdateEmail" class="w-full bg-slate-800 hover:bg-slate-700 text-blue-300 font-bold text-xs py-2 rounded-xl border border-slate-700 transition">
+            Update Email
+          </button>
+        </form>
+      </div>
+
+      <!-- 3. Change Password -->
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <h4 class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+          <span>🔒</span> Password အသစ်ပြောင်းရန်
+        </h4>
+        <form id="changePasswordForm" class="space-y-2">
+          <input type="password" id="newPasswordInput" minlength="6" required placeholder="New Password (အနည်းဆုံး ၆ လုံး)" class="w-full bg-slate-950 border border-slate-700 p-2.5 rounded-xl text-xs text-white focus:border-rose-400 focus:outline-none">
+          <button type="submit" id="btnUpdatePassword" class="w-full bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-xs py-2 rounded-xl border border-slate-700 transition">
+            Update Password
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation Bar (၅ ခု) -->
+  <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 py-2 px-3">
+    <div class="max-w-md mx-auto grid grid-cols-5 text-center">
+      <a href="index.html" class="nav-item flex flex-col items-center gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+        <span class="text-[10px] font-bold tracking-tight">HOME</span>
+      </a>
+
+      <a href="product.html" class="nav-item flex flex-col items-center gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+        <span class="text-[10px] font-bold tracking-tight">PRODUCT</span>
+      </a>
+
+      <a href="topup.html" class="nav-item flex flex-col items-center gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+        <span class="text-[10px] font-bold tracking-tight">RECHARGE</span>
+      </a>
+
+      <a href="order.html" class="nav-item flex flex-col items-center gap-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <span class="text-[10px] font-bold tracking-tight">ORDERS</span>
+      </a>
+
+      <!-- PROFILE (Active) -->
+      <a href="profile.html" class="nav-item active flex flex-col items-center gap-1">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span class="text-[10px] font-bold tracking-tight">PROFILE</span>
+      </a>
+    </div>
+  </nav>
+    <script>
+    const SUPABASE_URL = "https://jewxoyffdjobpfwpvvon.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impld3hveWZmZGpvYnBmd3B2dm9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjY4MDQsImV4cCI6MjEwMDk0MjgwNH0.6r0FfKUYHFVUW5utBl0x2Drvxo7VjtionjvIVzJISEQ";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let userProfile = null;
+
+    const showGoldAlert = (title, text, icon = 'success') => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: icon,
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm'
+        },
+        buttonsStyling: false
+      });
+    };
+
+    const showGoldConfirm = (title, text) => {
+      return Swal.fire({
+        title: title,
+        html: text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'အတည်ပြုသည်',
+        cancelButtonText: 'မလုပ်ပါ',
+        customClass: {
+          popup: 'custom-gold-popup',
+          title: 'custom-gold-title',
+          htmlContainer: 'custom-gold-content',
+          confirmButton: 'custom-gold-confirm',
+          cancelButton: 'custom-gold-cancel'
+        },
+        buttonsStyling: false
+      });
+    };
+
+    async function initProfile() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session?.user) {
+        showGoldAlert('သတိပေးချက်', 'Profile ကြည့်ရှုရန် Login အရင်ဝင်ပေးပါ', 'warning').then(() => {
+          location.href = 'login.html';
+        });
+        return;
+      }
+
+      currentUser = session.user;
+      const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+      const balance = profile?.wallet_balance || 0;
+      const displayName = profile?.username || currentUser.email.split('@')[0];
+      userProfile = { ...profile, username: displayName, wallet_balance: balance };
+
+      // UI Update
+      document.getElementById('profBalanceDisplay').textContent = `${Number(balance).toLocaleString()} Ks`;
+      document.getElementById('profDisplayUsername').textContent = displayName;
+      document.getElementById('profDisplayEmail').textContent = currentUser.email;
+      document.getElementById('newUsernameInput').value = displayName;
+      document.getElementById('newEmailInput').value = currentUser.email;
+    }
+
+    // 1. Change Username
+    document.getElementById('changeUsernameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newName = document.getElementById('newUsernameInput').value.trim();
+      if (!newName) return;
+
+      const confirm = await showGoldConfirm('Username ပြောင်းလဲမည်', `Username အသစ် <b>"${newName}"</b> သို့ ပြောင်းလဲမှာ သေချာပါသလား?`);
+      if (!confirm.isConfirmed) return;
+
+      const btn = document.getElementById('btnUpdateUsername');
+      btn.disabled = true; btn.textContent = 'Saving...';
+
+      try {
+        const { error } = await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentUser.id);
+        if (error) throw error;
+
+        // User Metadata Update
+        await supabaseClient.auth.updateUser({ data: { username: newName } });
+
+        document.getElementById('profDisplayUsername').textContent = newName;
+        await showGoldAlert('အောင်မြင်သည်', 'Username ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ!', 'success');
+      } catch (err) {
+        showGoldAlert('Error', err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Username';
+      }
+    });
+
+    // 2. Change Email
+    document.getElementById('changeEmailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newEmail = document.getElementById('newEmailInput').value.trim();
+      if (!newEmail || newEmail === currentUser.email) return;
+
+      const confirm = await showGoldConfirm('Email ပြောင်းလဲမည်', `Email အသစ် <b>"${newEmail}"</b> သို့ ပြောင်းလဲမှာ သေချာပါသလား? (အတည်ပြု Confirmation Link ရောက်ရှိနိုင်ပါသည်)`);
+      if (!confirm.isConfirmed) return;
+
+      const btn = document.getElementById('btnUpdateEmail');
+      btn.disabled = true; btn.textContent = 'Updating...';
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ email: newEmail });
+        if (error) throw error;
+
+        await supabaseClient.from('profiles').update({ email: newEmail }).eq('id', currentUser.id);
+
+        await showGoldAlert('Email Update လုပ်ပြီးပါပြီ', `ကျေးဇူးပြု၍ <b>${newEmail}</b> သို့ ပို့ထားသော အတည်ပြု Link ကို စစ်ဆေးပေးပါ။`, 'info');
+      } catch (err) {
+        showGoldAlert('Error', err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Update Email';
+      }
+    });
+
+    // 3. Change Password
+    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPasswordInput').value.trim();
+      if (!newPass || newPass.length < 6) {
+        showGoldAlert('သတိပေးချက်', 'Password သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်', 'warning');
+        return;
+      }
+
+      const confirm = await showGoldConfirm('Password ပြောင်းလဲမည်', 'Password အသစ် ပြောင်းလဲမှာ သေချာပါသလား?');
+      if (!confirm.isConfirmed) return;
+
+      const btn = document.getElementById('btnUpdatePassword');
+      btn.disabled = true; btn.textContent = 'Updating...';
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+        if (error) throw error;
+
+        document.getElementById('newPasswordInput').value = '';
+        await showGoldAlert('အောင်မြင်သည်', 'Password အသစ်ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ!', 'success');
+      } catch (err) {
+        showGoldAlert('Error', err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Update Password';
+      }
+    });
+
+    async function logoutUser() {
+      const confirm = await showGoldConfirm('Logout ထွက်မည်', 'အကောင့်ထဲမှ ထွက်မှာ သေချာပါသလား?');
+      if (confirm.isConfirmed) {
+        await supabaseClient.auth.signOut();
+        location.href = 'index.html';
+      }
+    }
+
+    initProfile();
+  </script>
+</body>
+</html>
