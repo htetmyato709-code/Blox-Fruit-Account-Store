@@ -83,7 +83,7 @@
       </button>
     </div>
 
-    <!-- Orders Container / Cards (Mobile Friendly) -->
+    <!-- Orders List Container -->
     <div id="ordersListContainer" class="space-y-3">
       <p class="p-6 text-slate-500 text-xs text-center bg-slate-900 border border-slate-800 rounded-2xl">
         Order မှတ်တမ်းများ ဆွဲယူနေပါသည်...
@@ -106,9 +106,7 @@
       </div>
 
       <!-- Accounts Table Area -->
-      <div class="space-y-2 max-h-72 overflow-y-auto pr-1" id="viewAccountsContent">
-        <!-- Dynamic Lines -->
-      </div>
+      <div class="space-y-2.5 max-h-80 overflow-y-auto pr-1" id="viewAccountsContent"></div>
 
       <div class="flex justify-between items-center pt-2 border-t border-slate-800">
         <button onclick="copyAllDelivered()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs px-3 py-2 rounded-xl border border-slate-700">
@@ -248,7 +246,6 @@
         const card = document.createElement('div');
         card.className = "bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-lg";
 
-        // Status Badge Style
         let badgeHtml = '';
         if (isCompleted) {
           badgeHtml = '<span class="text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800/60 px-2 py-0.5 rounded-md">✓ Completed</span>';
@@ -270,7 +267,7 @@
           <div class="grid grid-cols-2 gap-2 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/70 text-xs">
             <div>
               <p class="text-[10px] text-slate-400">အရေအတွက် (Qty)</p>
-              <p class="font-bold text-slate-200">${qty} ခု</p>
+              <p class="font-bold text-amber-300">${qty} ခု</p>
             </div>
             <div>
               <p class="text-[10px] text-slate-400">ကျသင့်ငွေ</p>
@@ -278,7 +275,7 @@
             </div>
           </div>
 
-          <!-- Action Buttons Bar (View, Download, Delete) -->
+          <!-- Action Buttons Bar -->
           <div class="flex items-center justify-end gap-1.5 pt-1 flex-wrap">
             ${isCompleted ? `
               <button onclick='viewDeliveredAccounts(${JSON.stringify(o)})' class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl flex items-center gap-1 shadow">
@@ -297,18 +294,23 @@
       });
     }
 
-    // 1. View Accounts Action
+    // 1. View Accounts Action (#1, #2 Accounts အစဉ်လိုက် ဖော်ပြခြင်း)
     function viewDeliveredAccounts(order) {
       const container = document.getElementById('viewAccountsContent');
-      document.getElementById('viewModalSub').textContent = `${order.product_title} (${order.quantity || 1} ခု)`;
+      const qty = order.quantity || 1;
+      document.getElementById('viewModalSub').textContent = `${order.product_title} (စုစုပေါင်း ${qty} ခု)`;
       container.innerHTML = '';
 
-      // Bulk N/P ဖြစ်လျှင် delivered_accounts မှ ယူမည်၊ မဟုတ်ပါက username/password မှ ယူမည်
       let accountsList = [];
+
       if (order.delivered_accounts && order.delivered_accounts.trim().length > 0) {
         accountsList = order.delivered_accounts.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       } else if (order.delivered_username) {
-        accountsList.push(`${order.delivered_username}:${order.delivered_password || ''}`);
+        if (order.delivered_username.includes('\n')) {
+          accountsList = order.delivered_username.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        } else {
+          accountsList.push(`${order.delivered_username}:${order.delivered_password || ''}`);
+        }
       }
 
       currentViewingRawAccounts = accountsList.join('\n');
@@ -323,15 +325,21 @@
           const p = parts.slice(1).join(separator).trim() || 'No Password';
 
           const div = document.createElement('div');
-          div.className = "bg-slate-950 border border-slate-800 p-2.5 rounded-xl space-y-1 text-xs";
+          div.className = "bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2 text-xs shadow";
           div.innerHTML = `
-            <div class="flex justify-between items-center text-[10px] text-slate-400">
-              <span class="font-bold text-amber-400"># Account ${idx + 1}</span>
-              <button onclick="copySingleText('${acc}', this)" class="text-cyan-400 hover:underline">Copy</button>
+            <div class="flex justify-between items-center border-b border-slate-800/80 pb-1.5">
+              <span class="font-black text-amber-400 text-xs">#${idx + 1} Accounts</span>
+              <button onclick="copySingleText('${acc}', this)" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold px-2 py-0.5 rounded border border-slate-700">Copy Line</button>
             </div>
-            <div class="font-mono text-slate-200">
-              <p><span class="text-slate-400">User:</span> <b class="text-white">${u}</b></p>
-              <p><span class="text-slate-400">Pass:</span> <b class="text-emerald-400">${p}</b></p>
+            <div class="space-y-1 font-mono text-[11px]">
+              <div class="flex justify-between items-center bg-slate-900/60 px-2 py-1 rounded">
+                <span class="text-slate-400">Username:</span>
+                <span class="text-white font-bold select-all">${u}</span>
+              </div>
+              <div class="flex justify-between items-center bg-slate-900/60 px-2 py-1 rounded">
+                <span class="text-slate-400">Password:</span>
+                <span class="text-emerald-400 font-bold select-all">${p}</span>
+              </div>
             </div>
           `;
           container.appendChild(div);
@@ -360,7 +368,7 @@
       });
     }
 
-    // 2. Download .txt File Action
+    // 2. Download .txt Action
     function downloadAccountsTxt(order) {
       let content = '';
       if (order.delivered_accounts && order.delivered_accounts.trim().length > 0) {
@@ -372,7 +380,7 @@
         return;
       }
 
-      const fileHeader = `--- StarGrow Store Order ---\nProduct: ${order.product_title}\nDate: ${new Date(order.created_at).toLocaleString()}\nPrice: ${order.price} Ks\n\nAccounts List:\n`;
+      const fileHeader = `--- StarGrow Store Order ---\nProduct: ${order.product_title}\nQty: ${order.quantity || 1}\nDate: ${new Date(order.created_at).toLocaleString()}\nPrice: ${order.price} Ks\n\nAccounts List:\n`;
       const blob = new Blob([fileHeader + content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
